@@ -32,7 +32,7 @@ To run this task, use:
 <code>npx hardhat queryProtein --pdbid "your_pdbid_query" --sequence "your_sequence_query" --exclusive "true/false"</code>
 </br>
 </br>
-All flags are optional. So if you want to, let's say, only search for pdbid's containing "1A", you'd only set the flag <code>--pdbid</code> to <code>"1A"</code>. If you wanted to search for sequences containing "AAA" but also contain "1A" in its pdbid, you'd have to set both flags to the corresponding values AND set <code>--exclusive</code> to <code>"true"</code>. This, because a value of <code>"false"</code> would return all sequences that match "AAA" AND all sequences that have a pdbid containing "1A".
+All flags are optional. So if you want to, let's say, only search for pdbid's containing "1A", you'd only set the flag <code>--pdbid</code> to <code>"1A"</code>. If you wanted to search for sequences containing "AAA" but also contain "1A" in its pdbid, you'd have to set both flags to the corresponding values AND set <code>--exclusive</code> to <code>"true"</code>. This, because a value of <code>"false"</code> would return all sequences that match "AAA" AND all sequences that have a pdbid containing "1A", while in this particular case we'd only want the values where both queries are true.
 </br>
 </br>
 The default values for each flag if omitted:
