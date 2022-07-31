@@ -44,10 +44,10 @@ The default values for each flag, if omitted, are:
 `--exclusive`: "false"
 
 <h4>5.1 Returned Value</h4>
-The query returns an object containing an array with all found proteins and an integer stating the amount of results found: <code>{proteins: Array of ProteinStruct, proteinsFound: uint}</code> where ProteinStruct is an object of the format <code>{nftId: uint, pdbId: string, sequence: string}</code>.
+The query returns an object containing an array with all found proteins and an integer stating the amount of results found: <code>{proteins: Array of ProteinStruct, proteinsFound: uint}</code> where <i>ProteinStruct</i> is an object of the format <code>{nftId: uint, pdbId: string, sequence: string}</code>.
 </br>
 </br>
-e.g. getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. For an example on how to loop through all the query results, see the <i>queryProtein</i>-task in <b>hardhat.config.js</b>.
+So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>queryProtein</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.
 
 <h3>Remarks</h3>
 - Solidity is not the most optimal when it comes to handling strings. Especially when it comes to large strings. Therefore ideas like pre-processing the database and storing smaller segments are possible routes to explore to get this working faster.
