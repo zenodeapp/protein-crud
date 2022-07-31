@@ -12,10 +12,10 @@ After having installed all dependencies use <code>npx hardhat node</code> to loc
 You could also use a different network of your choosing, which you could configure in the <b>hardhat.config.js</b>-file (for more info on this: https://hardhat.org/hardhat-runner/docs/config).
 
 <h3>3. Deployment</h3>
-Now after having a node up and running we'll have to deploy our contract using <code>npx hardhat run scripts/deploy.js</code>.
+Now after having a node up and running we'll have to deploy our contract using <code>npx hardhat run scripts/deploy.js</code>. Which will return the contract address, found in your terminal.
 
 <h4>3.1 Contract Address</h4>
-After deploying, add the contract address in an environment file (.env-file) and assign it to a variable called <b>CONTRACT_ADDRESS</b>.
+After deploying, add the contract address to an environment file (.env-file) in the root folder and assign the address to a variable called <b>CONTRACT_ADDRESS</b>.
 A dummy file is already present in this repository, so you could use that one. Just make sure to change the address and remove the `.dummy` extension.
 
 <h3>4. Adding the Proteins</h3>
