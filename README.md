@@ -50,10 +50,10 @@ The query returns an object containing an array with all found proteins and an i
 So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>queryProtein</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.
 
 <h3>Remarks</h3>
-- Solidity is not the most optimal when it comes to handling strings. Especially when it comes to large strings. Therefore ideas like pre-processing the database and storing smaller segments are possible routes to explore to get this working faster.
+- Solidity is not the most optimal when it comes to handling strings. Especially when it comes to larger strings. Therefore ideas like pre-processing the database and storing smaller segments are possible routes to explore to get this working faster (which I'm currently working on).
 </br>
 </br>
-- The searches are <i>case-sensitive</i> at the moment. This could be solved upon insertion of the proteins (but would discard whether the letters were lower or uppercase) or solved by adding an extra toLowerCase function in Solidity. But then again, Solidity is not optimal for string manipulation and this would degrade performance (which is currently a work in progress).
+- The searches are <i>case-sensitive</i> at the moment. This could be solved upon insertion of the proteins (but would discard whether the letters were lower or uppercase) or solved by adding an extra toLowerCase function in Solidity. But then again, Solidity is not optimal for string manipulation and this would degrade performance.
 </br>
 </br>
 - There's a limitation in Solidity where `memory arrays` can't be dynamic in size. And since we cannot know beforehand how many results a query will have, we temporarily store the results in an array of size n, with n = the total amount of proteins. To prevent returning an array with a bunch of empty values, we copy the query results, in the temporary array, to a smaller sized array in the last line of the <i>queryProtein</i> function. But, ofcourse this is an extra step, degrading the speed of our queries. More info is in the contract itself about this issue.
