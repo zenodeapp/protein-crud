@@ -9,7 +9,6 @@ contract ProteinQuery is ProteinCrud {
       //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
       ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
       ProteinStruct memory _protein;
-      bool condition;
 
       bool pdbIsEmpty = bytes(pdbIdQuery).length == 0;
       bool sequenceIsEmpty = bytes(sequenceQuery).length == 0;
@@ -19,7 +18,7 @@ contract ProteinQuery is ProteinCrud {
         bool includePdb = !pdbIsEmpty && containsWord(pdbIdQuery, _protein.pdbId);
         bool includeSequence = !sequenceIsEmpty && containsWord(sequenceQuery, _protein.sequence);
       
-        condition = !exclusive
+        bool condition = !exclusive
             ? includePdb || includeSequence
             : includePdb && includeSequence;
 
