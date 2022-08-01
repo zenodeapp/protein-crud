@@ -20,7 +20,7 @@ After deploying, add the contract address to an environment file (.env-file) in 
 A dummy file is already present in this repository, so you could use that one. Just make sure to change the address and remove the `.dummy` extension.
 
 <h3>4. Adding the Proteins</h3>
-So our contract's deployed, we now just have to add our proteins to the contract's storage. The script <b>addProteins.js</b> will help with this. It's a simple Javascript that reads in the data in the <b>protein_struct_1.txt</b>-file located in the root-folder. This contains the first 100 proteins from the Genesis L1 dataset (https://molnft.org/).
+So our contract's deployed, we now just have to add our proteins to the contract's storage. The script <b>addProteins.js</b> will help with this. It's a simple Javascript that reads data from a <b>.txt file</b> located in the <b>datasets</b>-folder. These files contain the first n proteins from the Genesis L1 dataset (https://molnft.org/), where 104059 is the file containing all proteins. Change which dataset size you wish to use by editing this in the script itself.
 </br>
 </br>
 Use: <code>npx hardhat run scripts/addProteins.js</code> to run the script.
