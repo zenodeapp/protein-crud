@@ -41,3 +41,44 @@ task(
       `${result.proteinsFound} results found matching query {sequence: "${sequence}", pdbid: "${pdbid}", exclusive: ${exclusive}}.`
     );
   });
+
+task("getProteinCount", "How many proteins are included in storage.").setAction(
+  async (_, hre) => {
+    const contract = await hre.ethers.getContractAt(
+      "ProteinQuery",
+      process.env.CONTRACT_ADDRESS
+    );
+
+    const result = await contract.getProteinCount();
+
+    console.log(result);
+  }
+);
+
+task("getProtein", "Returns the protein for the given NFT ID.")
+  .addParam("nft", "The NFT ID.", "")
+  .setAction(async (taskArgs, hre) => {
+    const { nft } = taskArgs;
+    const contract = await hre.ethers.getContractAt(
+      "ProteinQuery",
+      process.env.CONTRACT_ADDRESS
+    );
+
+    const result = await contract.getProtein(nft);
+
+    console.log(result);
+  });
+
+task("getProteinAtIndex", "Returns the NFT ID at the given index.")
+  .addParam("index", "The index value.", "")
+  .setAction(async (taskArgs, hre) => {
+    const { index } = taskArgs;
+    const contract = await hre.ethers.getContractAt(
+      "ProteinQuery",
+      process.env.CONTRACT_ADDRESS
+    );
+
+    const result = await contract.getProteinAtIndex(index);
+
+    console.log(result);
+  });

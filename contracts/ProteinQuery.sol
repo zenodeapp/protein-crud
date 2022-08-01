@@ -5,22 +5,22 @@ import './ProteinCrud.sol';
 
 contract ProteinQuery is ProteinCrud {
   // Query proteins by PdbId and/or Sequence. The returned value equals all proteins and the amount that has been found.
-  function queryProtein(string memory pdbIdQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
+  function queryProtein(string memory idQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
       //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
       ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
       ProteinStruct memory _protein;
 
-      bool pdbIsEmpty = bytes(pdbIdQuery).length == 0;
+      bool idIsEmpty = bytes(idQuery).length == 0;
       bool sequenceIsEmpty = bytes(sequenceQuery).length == 0;
 
       for(uint i = 0; i < proteinIndex.length; i++) {
         _protein = proteinStructs[proteinIndex[i]];
-        bool includePdb = !pdbIsEmpty && containsWord(pdbIdQuery, _protein.pdbId);
+        bool includeId = !idIsEmpty && containsWord(idQuery, _protein.id);
         bool includeSequence = !sequenceIsEmpty && containsWord(sequenceQuery, _protein.sequence);
       
         bool condition = !exclusive
-            ? includePdb || includeSequence
-            : includePdb && includeSequence;
+            ? includeId || includeSequence
+            : includeId && includeSequence;
 
         if(condition) {
             _proteins[proteinsFound] = _protein;
