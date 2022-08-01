@@ -1,6 +1,6 @@
 #### 1.0.1 (2022-08-01)
 
-- Renamed pdbId to id, added more datasets, added more tasks in the hardhat.config.js file and added a SKIP_EXISTING parameter in the insert protein function.
+- Renamed pdbId to id, added more datasets, more tasks (in hardhat.config.js) and a SKIP_EXISTING parameter in the insert protein function.
 
 #### 1.0.0 (2022-08-01)
 
