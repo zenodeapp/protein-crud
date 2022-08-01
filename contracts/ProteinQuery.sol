@@ -4,21 +4,21 @@ pragma solidity ^0.8.9;
 import './ProteinCrud.sol';
 
 contract ProteinQuery is ProteinCrud {
-    // Query proteins by PdbId and/or Sequence. The returned value equals all proteins and the amount that has been found.
-    function queryProtein(string memory pdbIdQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
-        //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
-        ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
-        ProteinStruct memory _protein;
-        bool condition;
+  // Query proteins by PdbId and/or Sequence. The returned value equals all proteins and the amount that has been found.
+  function queryProtein(string memory pdbIdQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
+      //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
+      ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
+      ProteinStruct memory _protein;
+      bool condition;
 
-        bool pdbIsEmpty = bytes(pdbIdQuery).length == 0;
-        bool sequenceIsEmpty = bytes(sequenceQuery).length == 0;
+      bool pdbIsEmpty = bytes(pdbIdQuery).length == 0;
+      bool sequenceIsEmpty = bytes(sequenceQuery).length == 0;
 
-        for(uint i = 0; i < proteinIndex.length; i++) {
+      for(uint i = 0; i < proteinIndex.length; i++) {
         _protein = proteinStructs[proteinIndex[i]];
         bool includePdb = !pdbIsEmpty && containsWord(pdbIdQuery, _protein.pdbId);
         bool includeSequence = !sequenceIsEmpty && containsWord(sequenceQuery, _protein.sequence);
-        
+      
         condition = !exclusive
             ? includePdb || includeSequence
             : includePdb && includeSequence;
@@ -27,7 +27,7 @@ contract ProteinQuery is ProteinCrud {
             _proteins[proteinsFound] = _protein;
             proteinsFound++;
         }
-    }
+      }
 
     // The problem with Solidity is that memory array's have a fixed size. So we can't work with dynamic arrays (unless we use storage, but this costs gas).
     // So after we discover how many proteins were found, we resize the returned array to the appropriate size.
