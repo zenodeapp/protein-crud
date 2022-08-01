@@ -4,10 +4,10 @@ const hre = require("hardhat");
 //Check the ./datasets folder to see which datasets are available.
 const DATASET_TO_IMPORT = "datasets/protein_structs_100.txt";
 
-// Normally, already imported NFTs will return with an error stating it already exists, but setting SKIP_EXISTING to true won't result in an error message.
+// Normally, already imported NFTs will return with an error stating it already exists, but setting BYPASS_REVERT to true won't result in an error message.
 // Do have in mind that this consumes more gas, for the tx doesn't get reverted!
 // Adviced to use this only for testing purposes. This parameter will probably be removed in the final version of the contract.
-const SKIP_EXISTING = false;
+const BYPASS_REVERT = false;
 
 async function main() {
   const res = await fs.readFile(DATASET_TO_IMPORT, {
@@ -30,7 +30,7 @@ async function main() {
       proteins[i].nftId,
       proteins[i].id,
       proteins[i].sequence,
-      SKIP_EXISTING
+      BYPASS_REVERT
     );
     console.log(`${i + 1}/${proteinsLength}`);
     totalGas = totalGas + parseInt(insertProtein.gasLimit);

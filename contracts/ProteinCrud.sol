@@ -23,10 +23,10 @@ contract ProteinCrud {
     return (proteinIndex[proteinStructs[nftId].index] == nftId);
   }
 
-  function insertProtein(uint nftId, string memory id, string memory sequence, bool skipExisting) public returns(uint index) {
+  function insertProtein(uint nftId, string memory id, string memory sequence, bool bypassRevert) public returns(uint index) {
     bool exists = isProtein(nftId);
 
-    if(skipExisting && exists) {
+    if(bypassRevert && exists) {
       return proteinIndex.length-1;
     } else {
       require(!exists, "This nft already exists and can't be inserted twice. Update its properties instead.");
