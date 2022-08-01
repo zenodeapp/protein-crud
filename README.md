@@ -4,7 +4,8 @@ A basic CRUD for Proteins with string query functionality.
 
 This has been built within the Hardhat environment and is merely a basis for querying protein sequences and PDBIDs.
 
-<h2>1. Getting Started</h2>
+<h2>Getting Started</h2>
+<h3>1. Installation</h3>
 To get started, install all dependencies using a package manager of your choosing. For instance: <code>yarn install</code> or <code>npm install</code>.
 
 <h3>2. Run Test Node</h3>
@@ -49,7 +50,7 @@ The query returns an object containing an array with all found proteins and an i
 </br>
 So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>queryProtein</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.
 
-<h3>Remarks</h3>
+<h2>Remarks</h2>
 - Solidity is not the most optimal when it comes to handling strings. Especially when it comes to larger strings. Therefore ideas like pre-processing the database and storing smaller segments are possible routes to explore to get this working faster (which I'm currently working on).
 </br>
 </br>
