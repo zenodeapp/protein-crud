@@ -1,9 +1,11 @@
 pragma solidity ^0.8.9;
 
+import './Owner.sol';
+
 //SPDX-License-Identifier: UNLICENSED
 //Basis from Rob Hitchens's UserCrud, found on: https://bitbucket.org/rhitchens2/soliditycrud/src/master/
 //Updated to the latest version of Solidity and edited for protein strings by Tousuke (anodeofzen/zenode.app).
-contract ProteinCrud {
+contract ProteinCrud is Owner {
   struct ProteinStruct {
     string id;
     string sequence;
@@ -23,7 +25,15 @@ contract ProteinCrud {
     return (proteinIndex[proteinStructs[nftId].index] == nftId);
   }
 
-  function insertProtein(uint nftId, string memory id, string memory sequence, bool bypassRevert) public returns(uint index) {
+  function insertProteins(uint[] memory nftIds, string[] memory ids, string[] memory sequences, bool bypassRevert) public onlyOwner returns(uint index) {
+    for(uint i = 0; i < nftIds.length; i++) {
+      insertProtein(nftIds[i], ids[i], sequences[i], bypassRevert);
+    }
+
+    return proteinIndex.length-1;
+  }
+
+  function insertProtein(uint nftId, string memory id, string memory sequence, bool bypassRevert) public onlyOwner returns(uint index) {
     bool exists = isProtein(nftId);
 
     if(bypassRevert && exists) {
@@ -46,7 +56,7 @@ contract ProteinCrud {
     return proteinIndex.length-1;
   }
 
-  function deleteProtein(uint nftId) public returns(uint index) {
+  function deleteProtein(uint nftId) public onlyOwner returns(uint index) {
     require(isProtein(nftId), "NFT ID could not be found in the database."); 
     
     uint rowToDelete = proteinStructs[nftId].index;
@@ -76,7 +86,7 @@ contract ProteinCrud {
       proteinStructs[nftId].index);
   } 
   
-  function updateProteinPdbId(uint nftId, string memory id) public returns(bool success) {
+  function updateProteinPdbId(uint nftId, string memory id) public onlyOwner returns(bool success) {
     require(isProtein(nftId), "NFT ID could not be found in the database."); 
     
     proteinStructs[nftId].id = id;
@@ -89,7 +99,7 @@ contract ProteinCrud {
     return true;
   }
   
-  function updateProteinSequence(uint nftId, string memory sequence) public returns(bool success) {
+  function updateProteinSequence(uint nftId, string memory sequence) public onlyOwner returns(bool success) {
     require(isProtein(nftId), "NFT ID could not be found in the database."); 
     
     proteinStructs[nftId].sequence = sequence;

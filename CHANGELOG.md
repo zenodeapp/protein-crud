@@ -1,3 +1,10 @@
+#### 1.0.2 (2022-08-02)
+
+- Created an insertProteins function in the ProteinCrud contract, we can now add multiple proteins at once.
+- Owner contract added. The ProteinCrud contract inherits its functionality, enabling it to prevent addresses, other than the owner, from accessing sensitive data/functions.
+- Added the Genesis network to the hardhat config file.
+- Revisited the addProteins.js script, it now shows more detailed analytics when adding proteins.
+
 #### 1.0.1 (2022-08-01)
 
 - Renamed PDBID to ID.

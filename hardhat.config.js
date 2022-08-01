@@ -8,33 +8,42 @@ module.exports = {
   networks: {
     hardhat: { gas: 2000000000, blockGasLimit: 2000000000 },
     localhost: { url: "http://127.0.0.1:8545", timeout: 100000000 },
+    genesisd: {
+      url: "http://23.88.68.53:8545",
+      // gasPrice: 2000000000,
+      // gas: 2000000000,
+      // blockGasLimit: 2000000000,
+      // allowUnlimitedContractSize: true,
+      chainId: 29,
+      accounts: [],
+      timeout: 100000000,
+    },
+  },
+  mocha: {
+    timeout: 100000000,
   },
 };
 
 task(
   "queryProtein",
-  "Get all NFTs matching pdb id or sequence with the given query."
+  "Get all NFTs matching id or sequence with the given query."
 )
   .addOptionalParam("sequence", "The sequence query.", "")
-  .addOptionalParam("pdbid", "The pdbid query.", "")
+  .addOptionalParam("id", "The PDBID/ACCESSION query.", "")
   .addOptionalParam(
     "exclusive",
     "Exclusive would mean that both query restrictions must be true, else one or the other has to be true.",
     "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const { pdbid, sequence, exclusive } = taskArgs;
+    const { id, sequence, exclusive } = taskArgs;
 
     const contract = await hre.ethers.getContractAt(
       "ProteinQuery",
       process.env.CONTRACT_ADDRESS
     );
 
-    const result = await contract.queryProtein(
-      pdbid,
-      sequence,
-      eval(exclusive)
-    );
+    const result = await contract.queryProtein(id, sequence, eval(exclusive));
 
     console.log(result.proteins);
     console.log(

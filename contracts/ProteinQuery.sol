@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import './ProteinCrud.sol';
 
 contract ProteinQuery is ProteinCrud {
-  // Query proteins by PdbId and/or Sequence. The returned value equals all proteins and the amount that has been found.
+  // Query proteins by ID and/or Sequence. The returned value equals all proteins and the amount that has been found.
   function queryProtein(string memory idQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
       //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
       ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
