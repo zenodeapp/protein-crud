@@ -2,7 +2,7 @@
 
 A basic CRUD for Proteins with string query functionality.
 
-This has been built within the Hardhat environment and is merely a basis for querying protein sequences and PDBIDs.
+This has been built within the Hardhat environment and is merely a basis for querying protein sequences and PDBID/ACCESSIONs.
 
 <h2>Getting Started</h2>
 <h3>1. Installation</h3>
@@ -26,26 +26,26 @@ So our contract's deployed, we now just have to add our proteins to the contract
 Use: <code>npx hardhat run scripts/addProteins.js</code> to run the script.
 
 <h3>5. Querying the Proteins</h3>
-We can finally query our dataset of proteins! I've written a task in the <b>hardhat.config.js</b>-file which calls the function <i>queryProtein</i> present in <b>contracts/ProteinQuery.sol</b>. It enables us to query by <i>sequence OR pdbid OR both (an exclusive query)</i>. 
+We can finally query our dataset of proteins! I've written a task in the <b>hardhat.config.js</b>-file which calls the function <i>queryProtein</i> present in <b>contracts/ProteinQuery.sol</b>. It enables us to query by <i>sequence OR ID OR both (an exclusive query)</i>. 
 </br>
 </br>
 To run this task, use:
-<code>npx hardhat queryProtein --pdbid "your_pdbid_query" --sequence "your_sequence_query" --exclusive "true/false"</code>
+<code>npx hardhat queryProtein --id "your_id_query" --sequence "your_sequence_query" --exclusive "true/false"</code>
 
 <h4>5.1 Flags</h4>
-All flags are optional. So if you want to, let's say, only search for pdbid's containing "1A", you'd only set the flag <code>--pdbid</code> to <code>"1A"</code>. If you wanted to search for sequences containing "AAA" but also contain "1A" in its pdbid, you'd have to set both flags to the corresponding values AND set <code>--exclusive</code> to <code>"true"</code>. This, because a value of <code>"false"</code> would return all sequences that match "AAA" AND all sequences that have a pdbid containing "1A", while in this particular case we'd only want the values where both queries are true.
+All flags are optional. So if you want to, let's say, only search for id's containing "1A", you'd only set the flag <code>--id</code> to <code>"1A"</code>. If you wanted to search for sequences containing "AAA" but also contain "1A" in its id, you'd have to set both flags to the corresponding values AND set <code>--exclusive</code> to <code>"true"</code>. This, because a value of <code>"false"</code> would return all sequences that match "AAA" AND all sequences that have a id containing "1A", while in this particular case we'd only want the values where both queries are true.
 </br>
 </br>
 The default values for each flag, if omitted, are:
 
-`--pdbid`: ""
+`--id`: ""
 
 `--sequence`: ""
 
 `--exclusive`: "false"
 
 <h4>5.2 Returned Value</h4>
-The query returns an object containing an array with all found proteins and an integer stating the amount of results found: <code>{proteins: Array of ProteinStruct, proteinsFound: uint}</code> where <i>ProteinStruct</i> is an object of the format <code>{nftId: uint, pdbId: string, sequence: string}</code>.
+The query returns an object containing an array with all found proteins and an integer stating the amount of results found: <code>{proteins: Array of ProteinStruct, proteinsFound: uint}</code> where <i>ProteinStruct</i> is an object of the format <code>{nftId: uint, id: string, sequence: string}</code>.
 </br>
 </br>
 So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>queryProtein</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.

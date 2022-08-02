@@ -47,7 +47,7 @@ task(
 
     console.log(result.proteins);
     console.log(
-      `${result.proteinsFound} results found matching query {sequence: "${sequence}", pdbid: "${pdbid}", exclusive: ${exclusive}}.`
+      `${result.proteinsFound} results found matching query {sequence: "${sequence}", id: "${id}", exclusive: ${exclusive}}.`
     );
   });
 

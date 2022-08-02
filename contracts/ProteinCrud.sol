@@ -86,7 +86,7 @@ contract ProteinCrud is Owner {
       proteinStructs[nftId].index);
   } 
   
-  function updateProteinPdbId(uint nftId, string memory id) public onlyOwner returns(bool success) {
+  function updateProteinId(uint nftId, string memory id) public onlyOwner returns(bool success) {
     require(isProtein(nftId), "NFT ID could not be found in the database."); 
     
     proteinStructs[nftId].id = id;
