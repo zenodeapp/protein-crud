@@ -18,15 +18,9 @@ async function main() {
     encoding: "utf8",
   });
 
-  let totalGas = 0;
   const proteins = JSON.parse(res);
   const proteinsLength = proteins.length;
   const amountTransactions = Math.ceil(proteinsLength / BATCH_SIZE);
-
-  const proteinQuery = await hre.ethers.getContractAt(
-    "ProteinQuery",
-    process.env.CONTRACT_ADDRESS
-  );
 
   console.log(`Amount to add: ${proteinsLength} proteins.`);
   console.log(
@@ -34,7 +28,13 @@ async function main() {
   );
   console.log(`Batch size: ${BATCH_SIZE} proteins per transaction.\n`);
 
+  const proteinQuery = await hre.ethers.getContractAt(
+    "ProteinQuery",
+    process.env.CONTRACT_ADDRESS
+  );
+
   console.time("timer");
+  let totalGas = 0;
   for (let i = 0; i < amountTransactions; i++) {
     const batch = proteins.filter(
       (_, j) => j >= i * BATCH_SIZE && j < (i + 1) * BATCH_SIZE
