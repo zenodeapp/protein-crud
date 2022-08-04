@@ -60,7 +60,7 @@ The default values for each flag, if omitted, are:
 The query returns an object containing an array with all found proteins and an integer stating the amount of results found: <code>{proteins: Array of ProteinStruct, proteinsFound: uint}</code> where <i>ProteinStruct</i> is an object of the format <code>{nftId: uint, id: string, sequence: string}</code>.
 </br>
 </br>
-So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>queryProtein</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.
+So, for instance, getting the sequence of the third protein in the returned value, in Javascript, would look like this: <code>result.proteins[2].sequence</code>. See the <i>naiveQuery</i>-task in <b>hardhat.config.js</b> for a working example on how to loop through all the query results.
 
 ## Remarks
 - ~~Solidity is not the most optimal when it comes to handling strings. Especially when it comes to larger strings. Therefore ideas like pre-processing the database and storing smaller segments are possible routes to explore to get this working faster (which I'm currently working on).~~ - included since version 1.1.0.
