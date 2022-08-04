@@ -1,3 +1,4 @@
+## SEMI-BLAST ERA
 #### 1.1.0 (2022-08-03)
 
 - MAJOR IMPROVEMENT: An algorithm inspired by the blast protocol has been implemented; massively improving speed for queries. It has a similar approach of cutting all sequences into short segments, but we puzzle it together only for the segments that match the query string exactly. Unlike blast, where we use a scoring matrix, where some versions allow for gaps to be present between the short sequences and where similar sequences are also included in the search results (if they score a high enough ranking based on an E-value). This will probably be implemented at some point in the future.
@@ -15,6 +16,7 @@
 - Refactored code.
 - Updated README.md (but needs work).
 
+## NAIVE ERA
 #### 1.0.2 (2022-08-02)
 
 - Created an insertProteins function in the ProteinCrud contract, we can now add multiple proteins at once.
