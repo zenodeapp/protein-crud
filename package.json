@@ -1,6 +1,6 @@
 {
-  "name": "protein-crud",
-  "version": "1.0.2",
+  "name": "protein-query",
+  "version": "1.1.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
@@ -20,7 +20,5 @@
     "solidity-coverage": "^0.7.21",
     "typechain": "^8.1.0"
   },
-  "dependencies": {
-    "dotenv": "^16.0.1"
-  }
+  "dependencies": {}
 }

@@ -1,12 +1,22 @@
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
+
 //SPDX-License-Identifier: UNLICENSED
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
 import './ProteinCrud.sol';
+import './SeedCrud.sol';
 
-contract ProteinQuery is ProteinCrud {
-  // Query proteins by ID and/or Sequence. The returned value equals all proteins and the amount that has been found.
-  function queryProtein(string memory idQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
-      //We'll have to temporarily create an array with a length equal to all proteins stored in our database.
+import "../node_modules/hardhat/console.sol";
+
+
+contract ProteinQuery is ProteinCrud, SeedCrud {
+  
+  /* QUERYING (NAIVE APPROACH) */
+
+  // The naive approach of querying. Works okay with smaller datasets, but takes a lot of time when it has to go through a bunch of sequences.
+  // Proteins are queried by going through every single one of them, step-by-step (it checks whether the query is contained in the protein's sequence).
+  function naiveQuery(string memory idQuery, string memory sequenceQuery, bool exclusive) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
+      //We'll create a temporary array with a length equal to all proteins stored in our database.
       ProteinStruct[] memory _proteins = new ProteinStruct[](proteinIndex.length);
       ProteinStruct memory _protein;
 
@@ -37,6 +47,85 @@ contract ProteinQuery is ProteinCrud {
     // proteins = _proteins;
   }
 
+  /* SEMI-BLAST */
+  // Inspired by the first couple steps of the Blast algorithm, but leans mostly on the lookup table, 
+  // rather than having probable outcomes using scoring matrices and E-values.
+  
+  // Basic principal for this algorithm:
+  // 1. Split the query in short w-sized pieces.
+  // 2. Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: SeedCrud.sol or ./datasets/seeds/ on our GitHub.)
+  // 3. Puzzle the w-sized pieces back together and return only the proteins that successfully match our queried string.
+  // TODO: handle queries shorter than the seed size
+  // TODO: Add the querying of id's.
+  function semiBlastQuery(string memory sequenceQuery) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
+    require(seedIndex.length > 0, "In order to query in this manner, seeds have to be inserted first.");
+    
+    if(bytes(sequenceQuery).length < seedSize) {
+      //when the queried sequence is shorter than the seedSize
+    } else {
+      (string[] memory splittedQuery, uint seedTailSize) = splitWord(sequenceQuery, seedSize, seedStep, true);
+      SeedPositionStruct[][] memory positions = getAllSeedPositions(splittedQuery);
+      (proteins, proteinsFound) = puzzleSeedPositions(positions, seedSize - seedTailSize);
+    }
+
+    return (proteins, proteinsFound);
+  }
+
+  function puzzleSeedPositions(SeedPositionStruct[][] memory positions, uint seedTailOverlap) 
+  internal view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
+    uint maxQueryAmount = positions[0].length;
+
+    ProteinStruct[] memory _proteins = new ProteinStruct[](maxQueryAmount);
+    SeedPositionStruct[] memory possibleMatches = new SeedPositionStruct[](maxQueryAmount);
+    
+    possibleMatches = positions[0];
+
+    int[] memory mismatchCounter = new int[](maxQueryAmount); // init value: 0, match: -1, mismatch: > 0
+    bool[] memory addedProteins = new bool[](proteinIndex.length);
+
+    for (uint i = 0; i < maxQueryAmount; i++) {
+      uint nftId = possibleMatches[i].nftId;
+      uint nftIndex = nftId - 1;
+
+      for(uint j = 1; j < positions.length; j++) {
+        for(uint k = 0; k < positions[j].length; k++) {
+          SeedPositionStruct memory currentSeedPosition = positions[j][k];
+
+          // if nftId's match AND previous position + seedStep equals the current position, then we have a match.
+          // However, there's an exception to this rule at the last seed, for this word may overlap with the second last word.
+          // See splitWord in QueryHelpers.sol for more information. Particularly the 'forceSize' parameter.
+          if(nftId == currentSeedPosition.nftId && 
+          currentSeedPosition.position == (possibleMatches[i].position + seedStep - 
+          (j == positions.length - 1 ? seedTailOverlap : 0))) {
+            possibleMatches[i].position = positions[j][k].position;
+            mismatchCounter[i] = -1;
+            break;
+          } else {
+            mismatchCounter[i]++;
+          }
+        }
+
+        //-1 means we found a match, anything higher indicates that we've only encountered mismatches
+        if(mismatchCounter[i] > 0) break; 
+        
+        //Reset the counter (only happens if this round matched)
+        mismatchCounter[i] = 0;
+      }
+
+      if(mismatchCounter[i] > 0) continue;
+
+      //If we made it this far, it means a match was found
+      if(!addedProteins[nftIndex]) {
+        _proteins[proteinsFound] = proteinStructs[nftId];
+        proteinsFound++;
+
+        addedProteins[nftIndex] = true;
+      }
+    }
+
+    proteins = resizeProteinStructArray(_proteins, proteins, proteinsFound);
+  }
+
   //This function allows us to resize ProteinStruct arrays to appropriate lengths by copying data to a new sized array.
   function resizeProteinStructArray(ProteinStruct[] memory _from, ProteinStruct[] memory _to, uint _size) private pure returns(ProteinStruct[] memory) {
     _to = new ProteinStruct[](_size);
@@ -46,32 +135,5 @@ contract ProteinQuery is ProteinCrud {
     }
 
     return _to;
-  }
-
-  // Credit: Hermes Ateneo (https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol)
-  function containsWord(string memory what, string memory where) internal pure returns (bool found) {
-    bytes memory whatBytes = bytes(what);
-    bytes memory whereBytes = bytes(where);
-
-    if (whereBytes.length < whatBytes.length) return false;
-
-    found = false;
-    for (uint i = 0; i <= whereBytes.length - whatBytes.length; i++) {
-      bool flag = true;
-
-      for (uint j = 0; j < whatBytes.length; j++) {
-        if (whereBytes [i + j] != whatBytes [j]) {
-          flag = false;
-          break;
-        }
-      }
-      
-      if (flag) {
-        found = true;
-        break;
-      }
-    }
-
-    return found;
   }
 }

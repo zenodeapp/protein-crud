@@ -1,7 +1,8 @@
 const hre = require("hardhat");
+const { getProteinFactory } = require("../helpers/web3");
 
 async function main() {
-  const ProteinQuery = await hre.ethers.getContractFactory("ProteinQuery");
+  const ProteinQuery = await getProteinFactory(hre);
   const proteinQuery = await ProteinQuery.deploy();
 
   await proteinQuery.deployed();
