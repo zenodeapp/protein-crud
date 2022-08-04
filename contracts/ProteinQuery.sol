@@ -125,12 +125,10 @@ contract ProteinQuery is ProteinCrud, SeedCrud {
       if(mismatchCounter[i] > 0) continue;
 
       //If we made it this far, it means a match was found
-      if(!addedProteins[nftIndex]) {
-        _proteins[proteinsFound] = proteinStructs[nftId];
-        proteinsFound++;
+      _proteins[proteinsFound] = proteinStructs[nftId];
+      proteinsFound++;
 
-        addedProteins[nftIndex] = true;
-      }
+      addedProteins[nftIndex] = true;
     }
 
     proteins = resizeProteinStructArray(_proteins, proteins, proteinsFound);
