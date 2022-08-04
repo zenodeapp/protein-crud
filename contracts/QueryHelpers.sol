@@ -19,6 +19,9 @@ contract QueryHelpers {
     require(wordSize >= size, "Word can't be smaller than the segment size.");
 
     uint wordPointer = 0;
+    
+    //My brain hurt after having figured this one out :).
+    //This is basically the amount of words we're able to make, while being considerate of both the 'size' and 'step'-value.
     uint wordThreshold = wordSize - size;
     uint wordCount = (wordThreshold / step) + (wordThreshold % step > 0 ? 1 : 0) + 1;
 
