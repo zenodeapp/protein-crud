@@ -11,7 +11,8 @@
 - Renamed the addProteins script to insertProteins, queryProtein to naiveQuery, getProteinCount to proteinCount and getProteinAtIndex to proteinAtIndex.
 - An insertSeeds.js script has been added (should be run after deployment in order for the new algorithm to work).
 - Tasks 'semiBlastQuery', 'seedCount', 'seedAtIndex', 'updateSeedSize', 'updateSeedStep' and 'getSeed' added.
-- Generalized and refactored the insertion script (saved in ./helper/insertion.js). The insertSeeds and insertProteins scripts use this script as a basis.
+- Abstracted and refactored the insert-script (saved in ./helper/insertion.js). The insertSeeds and insertProteins scripts use this script as a basis.
+- Created some helper functions.
 - Restructured all contracts and set the Solidity version to 0.8.12.
 - Refactored code.
 - Added comments.
