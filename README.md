@@ -35,10 +35,14 @@ We can finally query our dataset of proteins! I've written a task in the <b>hard
 </br>
 </br>
 To run this task, use:
-<code>npx hardhat naiveQuery --id "your_id_query" --sequence "your_sequence_query" --exclusive "true/false"</code>
-<code>npx hardhat semiBlastQuery --sequence "your_sequence_query"</code> <i>alot faster!</i>
 </br>
-Currently, the indexed version doesn't include id querying, nor exclusive queries.
+<code>npx hardhat naiveQuery --id "your_id_query" --sequence "your_sequence_query" --exclusive "true/false"</code>
+</br>
+</br>
+OR
+</br>
+</br>
+<code>npx hardhat semiBlastQuery --sequence "your_sequence_query"</code> <i>alot faster!</i>
 
 <h4>5.1 Flags</h4>
 All flags are optional. So if you want to, let's say, only search for id's containing "1A", you'd only set the flag <code>--id</code> to <code>"1A"</code>. If you wanted to search for sequences containing "AAA" but also contain "1A" in its id, you'd have to set both flags to the corresponding values AND set <code>--exclusive</code> to <code>"true"</code>. This, because a value of <code>"false"</code> would return all sequences that match "AAA" AND all sequences that have a id containing "1A", while in this particular case we'd only want the values where both queries are true.
