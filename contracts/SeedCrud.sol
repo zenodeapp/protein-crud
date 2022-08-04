@@ -117,7 +117,7 @@ contract SeedCrud is Owner, QueryHelpers {
     return seedStructs[seed].positions;
   }
 
-  function getAllSeedPositions(string[] memory seeds) public view returns (SeedPositionStruct[][] memory positions) {
+  function getAllSeedPositions(string[] memory seeds) internal view returns (SeedPositionStruct[][] memory positions) {
     positions = new SeedPositionStruct[][](seeds.length);
 
     for(uint i = 0; i < seeds.length; i++) {
