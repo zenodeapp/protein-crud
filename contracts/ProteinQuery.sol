@@ -87,9 +87,19 @@ contract ProteinQuery is ProteinCrud, SeedCrud {
       uint nftId = possibleMatches[i].nftId;
       uint nftIndex = nftId - 1;
 
+      // If the protein has already been added, it's not necessary to include it in our calculations
+      if(addedProteins[nftIndex]) continue; 
+
       for(uint j = 1; j < positions.length; j++) {
         for(uint k = 0; k < positions[j].length; k++) {
           SeedPositionStruct memory currentSeedPosition = positions[j][k];
+
+          // Again, if the NFT has already been added, skip.
+          // Also treat this round as a mismatch.
+          if(addedProteins[currentSeedPosition.nftId - 1]) {
+            mismatchCounter[i]++;   
+            continue;
+          } 
 
           // if nftId's match AND previous position + seedStep equals the current position, then we have a match.
           // However, there's an exception to this rule at the last seed, for this word may overlap with the second last word.
