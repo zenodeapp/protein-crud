@@ -9,7 +9,7 @@ contract QueryHelpers {
   // word=ABCDEF, size=4 and step=2 will result in: [ABCD, CDEF, EF].
   // word=ABCDEFG, size=3 and step=3 will give every segment without overlap: [ABC, DEF, G].
   // word=ABCDEFG, size=3, step=3 and forceSize=true will result in: [ABC, DEF, EFG].
-  function splitWord(string memory word, uint size, uint step, bool forceSize) public pure returns(string[] memory segments, uint seedTailSize) {
+  function splitWord(string memory word, uint size, uint step, bool forceSize) internal pure returns(string[] memory segments, uint seedTailSize) {
     require(step <= size, "Step can't be higher than the given size.");
     require(step > 0, "A step value higher than 0 is required.");
 
