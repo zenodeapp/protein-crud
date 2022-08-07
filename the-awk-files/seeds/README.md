@@ -5,7 +5,9 @@ This will generate the seed structs as seen in the ./datasets/seeds folder.
 Apply the awk in this folder to the nfts.input file in the parent folder.
 </br>e.g. this will generate 1000 seeds with a seed size of 4 per .txt file:
 </br>`awk -v w=4 -v max=1000 -f seeds.awk ../nft.input`
-
+</br>
+</br>
+NOTE: if `awk` doesn't work, you may need to use `gawk` as I've utilized the sorting function `asorti`, which is only available in `gawk` according to the documentations online (https://www.gnu.org/software/gawk/manual/html_node/Array-Sorting-Functions.html).
 ### Variables
 
 - `max`: changes the amount of seeds per file. Default `1400`.
