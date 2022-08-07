@@ -3,14 +3,11 @@
 function print_array() {
     arr_str="[";
         
-    for(x=0;x<maxNFT;x++) {
+    for(x=0;x<length(protein_structs);x++) {
         if(protein_structs[x]) {
             arr_str = arr_str""protein_structs[x];
-        } else {
-            arr_str=arr_str"{}";
+            arr_str=arr_str""(x != length(protein_structs) - 1 ? ","(oneliner == 0 ? "\n" : "") : "");
         }
-        
-        arr_str=arr_str""(x != maxNFT - 1 ? ","(oneliner == 0 ? "\n" : "") : "");
     } 
     
     arr_str=arr_str"]";
