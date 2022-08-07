@@ -14,7 +14,7 @@ function print_array() {
     } 
     
     arr_str=arr_str"]";
-    print arr_str > "./output/protein_structs_"indexer".txt";
+    print arr_str > "./output/protein_structs_"max"_"indexer".txt";
     
     delete protein_structs;
     

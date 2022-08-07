@@ -27,7 +27,7 @@ BEGIN{
     l["X"] = 23;
     l["U"] = 24;
     
-    seed_size=w ? w : 4;
+    seed_size=w ? w : 3;
     base_length= base ? base : 20;
     maxNFT = max ? max : 1400;
     nft_id=1;
@@ -40,6 +40,8 @@ BEGIN{
 } 
 
 function print_result() {    
+    output_folder = "./seed_size_"seed_size""(unique_id==1 ? "_unique" : "");
+
     if(unique_id) {
         total_length=(base_length)^(seed_size);
         arr_str = "[";
@@ -48,27 +50,21 @@ function print_result() {
             arr_str=arr_str"["arr[y]"]"; 
             
             if(y != (total_length - 1)) {
-                arr_str=arr_str","(no_newline==1? "" : "\n")
+                arr_str=arr_str","
             }
-        
         }
 
         arr_str=arr_str"]";
+        print arr_str > output_folder"/seed_"seed_size"_structs_"max"_"indexer".txt";
     } else {
-        arr_str = "{";
-        
         n = asorti(arr, destination);
         for (i = 1; i <= n; i++) {
             seed_k = destination[i];
-            arr_str=arr_str""(arr_str != "{" ? "," : "")""(no_newline==1? "" : "\n")"\""seed_k"\":["arr[seed_k]"]"; 
+            arr_str=(i == 1 ? "{" : "")"\""seed_k"\":["arr[seed_k]"]"(i < n ? "," : "}"); 
+            print arr_str > output_folder"/seed_"seed_size"_structs_"max"_"indexer".txt";
         }
-
-        arr_str=arr_str"}";
     }
     
-    output_folder = "./seed_size_"seed_size""(unique_id==1 ? "_unique" : "");
-    print arr_str > output_folder"/seed_size_"seed_size"_indexer_"indexer".txt";
-
     delete arr;
     indexer_pointer=0;
     counter = 0;
