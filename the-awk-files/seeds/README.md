@@ -7,7 +7,7 @@ Apply the awk in this folder to the nfts.input file in the parent folder.
 </br>`awk -v w=4 -v max=1000 -f seeds.awk ../nft.input`
 </br>
 </br>
-NOTE: if `awk` doesn't work, you may need to use `gawk` as I've utilized the sorting function `asorti`, which is only available in `gawk` according to the documentations online (https://www.gnu.org/software/gawk/manual/html_node/Array-Sorting-Functions.html).
+
 ### Variables
 
 - `max`: changes the amount of seeds per file. Default `1400`.
@@ -16,6 +16,7 @@ NOTE: if `awk` doesn't work, you may need to use `gawk` as I've utilized the sor
   It's the indices you'd get if you'd "append" all sequences together into one gigantic string.
   `0` would give the NFTID plus the index (inside this protein's sequence). Default: `0` (what we use in this repo).
 - `base`: change the amount of amino acids (so the protein alphabet) that are available. Default: `20` (what we use in this repo).
+- `no_sort`: setting this to `1` will disable sorting. Default: `0`.
 
 ### Result
 The resulting .txt files can be found in a folder named after the seed size (e.g. seed_size_3, seed_size_4, etc.).
