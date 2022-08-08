@@ -68,7 +68,6 @@ contract ProteinQuery is ProteinCrud, SeedCrud {
   // TODO: Add the querying of id's and exclusive queries.
   function semiBlastQuery(string memory sequenceQuery) public view returns(ProteinStruct[] memory proteins, uint proteinsFound) {
     uint wordSize = bytes(sequenceQuery).length;
-    
     require(wordSize != 0, "Query can't be empty.");
     require(seedIndex.length > 0, "In order to query in this manner, seeds have to be inserted first.");
     
