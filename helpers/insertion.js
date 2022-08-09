@@ -25,15 +25,17 @@ module.exports = async (file, perBatch, type, callback) => {
   for (let i = 0; i < amountTransactions; i++) {
     const insertCall = await callback(contract, i, data, keys);
 
-    const receipt = await insertCall.wait();
-    const gasCost = receipt.gasUsed;
+    const receipt = insertCall ? await insertCall.wait() : false;
+    const gasCost = receipt ? receipt.gasUsed : 0;
     totalGas = totalGas + parseInt(gasCost);
 
-    console.log(
-      `${i + 1}/${amountTransactions}\t${
-        i == amountTransactions - 1 ? dataLength : (i + 1) * perBatch
-      }/${dataLength}\t${gasCost}/${totalGas}`
-    );
+    if (gasCost != 0) {
+      console.log(
+        `${i + 1}/${amountTransactions}\t${
+          i == amountTransactions - 1 ? dataLength : (i + 1) * perBatch
+        }/${dataLength}\t${gasCost}/${totalGas}`
+      );
+    }
   }
   console.timeEnd("timer");
 

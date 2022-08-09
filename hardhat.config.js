@@ -110,7 +110,7 @@ task("proteinAtIndex", "Returns the NFT ID at the given index.")
   .setAction(async (taskArgs, hre) => {
     const contract = await getProteinContract(hre);
 
-    const result = await contract.getProteinAtIndex(taskArgs.index);
+    const result = await contract.proteinAtIndex(taskArgs.index);
     console.log(result);
   });
 task("seedAtIndex", "Returns the seed at the given index.")
@@ -175,4 +175,36 @@ task("splitWord", "Split a word in multiple segments.")
       eval(forcesize)
     );
     console.log(result);
+  });
+
+task(
+  "deleteProtein",
+  "Returns all NFTs (with positions) that contain this short seed phrase."
+)
+  .addParam("nft", "The NFT ID.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getProteinContract(hre);
+
+    const result = await contract.deleteProtein(taskArgs.nft);
+    console.log(result);
+  });
+
+task(
+  "deleteSeed",
+  "Returns all NFTs (with positions) that contain this short seed phrase."
+)
+  .addParam("seed", "The seed.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getProteinContract(hre);
+
+    const result = await contract.deleteSeed(taskArgs.seed);
+    console.log(result);
+  });
+
+task("addAdmin", "Add a new admin.")
+  .addParam("address", "The address.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getProteinContract(hre);
+
+    const result = await contract.addAdmin(taskArgs.address);
   });
