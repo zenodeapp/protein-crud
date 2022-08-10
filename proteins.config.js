@@ -39,7 +39,6 @@ module.exports = {
       address: "",
     },
 
-    //Work in progress
     structs: {
       name: "Structs",
       address: "",
