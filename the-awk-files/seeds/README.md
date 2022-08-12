@@ -14,6 +14,7 @@ Apply the awk in this folder to the nfts.input file in the parent folder.
 
 - `max`: changes the amount of seeds per file. Default: `1400`.
 - `max_position_size`: change the amount of positions a seed may hold. Default: `0` (all).
+- `seed_to_print`: if you only want to print one specific seed, e.g. "AAE". Default: "" (all).
 - `cap`: this caps the amount of .txt files awk will export. Default: `0` (all).
 - `w`: changes the seed size, default: `3`.
 - `relative`: setting this to `1` would give a relative position for each word, example: "AAA": [0, 230, 1000, 15005].
