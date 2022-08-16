@@ -68,11 +68,13 @@ contract TempQuery is CrudProtein, CrudSeed {
   // 2. Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: SeedCrud.sol or ./datasets/seeds/ on our GitHub.)
   // 3. Puzzle the w-sized pieces back together and return only the proteins that successfully match our queried string.
   // TODO: Add the querying of id's and exclusive queries.
-  function semiBlastQuery(string memory sequenceQuery) public view returns(Structs.ProteinStruct[] memory proteins, uint proteinsFound) {
+  function semiBlastQuery(string memory sequenceQuery, bool caseSensitive) public view returns(Structs.ProteinStruct[] memory proteins, uint proteinsFound) {
     uint wordSize = bytes(sequenceQuery).length;
     require(wordSize != 0, "Query can't be empty.");
     require(seedIndex.length > 0, "In order to query in this manner, seeds have to be inserted first.");
     
+    if(!caseSensitive) sequenceQuery = sequenceQuery.toUpper();
+
     if(wordSize < seedSize) {
       (proteins, proteinsFound) = querySmallWords(sequenceQuery);
     } else {
@@ -144,19 +146,19 @@ contract TempQuery is CrudProtein, CrudSeed {
       uint nftId = possibleMatches[i].nftId;
       uint nftIndex = nftId - 1;
 
-      // If the protein has already been added, it's not necessary to include it in our calculations
-      if(addedProteins[nftIndex]) continue; 
+      // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.
+      if(nftId > addedProteins.length || addedProteins[nftIndex]) continue; 
 
       for(uint j = 1; j < positions.length; j++) {
         for(uint k = 0; k < positions[j].length; k++) {
           Structs.SeedPositionStruct memory currentSeedPosition = positions[j][k];
 
-          // Again, if the protein was already added, skip.
+          // Again, if the protein doesn't exist or was already added, skip.
           // Also treat this round as a mismatch.
-          if(addedProteins[currentSeedPosition.nftId - 1]) {
+          if(currentSeedPosition.nftId > addedProteins.length || addedProteins[currentSeedPosition.nftId - 1]) {
             mismatchCounter[i]++;   
             continue;
-          } 
+          }
 
           // if nftId's match AND (previous position + seedStep) equals the current position, then we have a match.
           // However, there's an exception to this rule at the last seed, for this word may overlap with the second last word.

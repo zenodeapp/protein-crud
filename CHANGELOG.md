@@ -2,6 +2,7 @@
 
 #### 1.2.1 (2022-08-11)
 
+- Case (in)sensitive functionality for Semi-Blast added.
 - Changed the delete mechanism for seed positions in CrudSeed.sol.
 - Added a insertManySeedPositions function in the contract and script insertManyPositions. This way we always add extra positions (USE WITH CAUTION!)
 - insertMany and insertManyPositions now show many positions each seed will add.

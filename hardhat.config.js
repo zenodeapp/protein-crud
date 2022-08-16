@@ -212,14 +212,15 @@ task(
   "semiBlastQuery",
   "Get all NFTs matching the query using the semi-blast protocol."
 )
-  .addOptionalParam("sequence", "The sequence query.", "")
+  .addParam("sequence", "The sequence query.", "")
+  .addOptionalParam("casesensitive", "Case-sensitive lookup.", "false")
   .setAction(async (taskArgs, hre) => {
     const contract = await getIndexerContract(hre);
-    const { sequence } = taskArgs;
+    const { sequence, casesensitive } = taskArgs;
 
-    const result = await contract.semiBlastQuery(sequence);
+    const result = await contract.semiBlastQuery(sequence, eval(casesensitive));
     console.log(result.proteins);
     console.log(
-      `${result.proteinsFound} results found matching query {sequence: "${sequence}"}.`
+      `${result.proteinsFound} results found matching query {sequence: "${sequence}", casesensitive: ${casesensitive}}.`
     );
   });

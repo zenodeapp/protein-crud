@@ -89,4 +89,38 @@ library Strings {
 
     return found;
   }
+
+  // https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf
+  function toLower(string memory str) public pure returns (string memory) {
+		bytes memory bStr = bytes(str);
+    bytes memory bLower = new bytes(bStr.length);
+
+    for (uint i = 0; i < bStr.length; i++) {
+        // Uppercase character...
+        if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
+            // So we add 32 to make it lowercase
+            bLower[i] = bytes1(uint8(bStr[i]) + 32);
+        } else {
+            bLower[i] = bStr[i];
+        }
+    }
+    return string(bLower);
+  }
+
+  // Based on toLower()
+  function toUpper(string memory str) public pure returns (string memory) {
+    bytes memory bStr = bytes(str);
+    bytes memory bUpper = new bytes(bStr.length);
+
+    for (uint i = 0; i < bStr.length; i++) {
+        // Lowercase character...
+        if ((uint8(bStr[i]) >= 97) && (uint8(bStr[i]) <= 122)) {
+            // So we subtract 32 to make it uppercase
+            bUpper[i] = bytes1(uint8(bStr[i]) - 32);
+        } else {
+            bUpper[i] = bStr[i];
+        }
+    }
+    return string(bUpper);
+  }
 }
