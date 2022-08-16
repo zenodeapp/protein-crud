@@ -12,11 +12,6 @@ contract Query {
 
   string[20] aminoAcids;
 
-  struct IndexerPair {
-    IndexerProtein indexerProtein;
-    IndexerSeed indexerSeed;
-  }
-
   struct QueryResultNftIds {
     uint[] nftIds;
     uint proteinCount;
