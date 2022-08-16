@@ -433,3 +433,65 @@ task(
       `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
     );
   });
+
+task(
+  "queryNftIdsById",
+  "Get all NFTs matching the query using the naive query protocol."
+)
+  .addParam("id", "The protein's id.", "")
+  .addOptionalParam(
+    "limit",
+    "Limit the amount of results given back.",
+    queryOptions.defaultLimit
+  )
+  .addOptionalParam(
+    "casesensitive",
+    "Case-sensitive lookup.",
+    queryOptions.defaultCaseSensitivity ? "true" : "false"
+  )
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getQueryContract(hre);
+    const { id, limit, casesensitive } = taskArgs;
+
+    const result = await contract.queryNftIdsById(
+      contracts.indexerProtein.address,
+      id,
+      { limit, caseSensitive: eval(casesensitive) }
+    );
+
+    console.log(result.nftIds);
+    console.log(
+      `${result.proteinCount} results found matching query {id: "${id}", limit: ${limit}, casesensitive: ${casesensitive}}.`
+    );
+  });
+
+task(
+  "queryProteinsById",
+  "Get all NFTs matching the query using the naive query protocol."
+)
+  .addParam("id", "The protein's id.", "")
+  .addOptionalParam(
+    "limit",
+    "Limit the amount of results given back.",
+    queryOptions.defaultLimit
+  )
+  .addOptionalParam(
+    "casesensitive",
+    "Case-sensitive lookup.",
+    queryOptions.defaultCaseSensitivity ? "true" : "false"
+  )
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getQueryContract(hre);
+    const { id, limit, casesensitive } = taskArgs;
+
+    const result = await contract.queryProteinsById(
+      contracts.indexerProtein.address,
+      id,
+      { limit, caseSensitive: eval(casesensitive) }
+    );
+
+    console.log(result.proteins);
+    console.log(
+      `${result.proteinCount} results found matching query {id: "${id}", limit: ${limit}, casesensitive: ${casesensitive}}.`
+    );
+  });

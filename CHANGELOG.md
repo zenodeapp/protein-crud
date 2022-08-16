@@ -2,6 +2,7 @@
 
 #### 1.2.2 (2022-08-16)
 
+- It's possible now to query IDs (naive approach), but separate from sequences.
 - BREAKING CHANGES: Removed the TempQuery contract and all its scripts.
 - BREAKING CHANGES: (Temporarily) disabled NaiveQuery.
 - BREAKING CHANGES: Temporarily disabled querying words smaller than the seedSize.

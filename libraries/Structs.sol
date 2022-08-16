@@ -5,7 +5,7 @@ pragma solidity ^0.8.12;
 
 library Structs {
   struct ProteinStruct {
-    // uint nftId;
+    uint nftId;
     string id;
     string sequence;
     string ipfsHash;
@@ -13,7 +13,7 @@ library Structs {
   }
 
   struct SeedStruct {
-    // string seed;
+    string seed;
     SeedPositionStruct[] positions;
     uint index;
   }
