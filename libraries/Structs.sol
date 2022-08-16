@@ -23,6 +23,11 @@ library Structs {
     uint position;
   }
 
+  struct IndexerStruct {
+    string group;
+    uint id;
+  }
+
   //This function allows us to resize ProteinStruct arrays to appropriate lengths by copying data to a new sized array.
   function resizeArray(ProteinStruct[] memory _from, ProteinStruct[] memory _to, uint _size) public pure returns(ProteinStruct[] memory) {
     _to = new ProteinStruct[](_size);

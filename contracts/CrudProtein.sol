@@ -148,6 +148,38 @@ contract CrudProtein is Owner {
     return proteinStructs[nftId];
   }
 
+  function getManyProteinStructs(uint[] memory nftIds) public view returns(Structs.ProteinStruct[] memory proteins) {
+    proteins = new Structs.ProteinStruct[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      proteins[i] = getProteinStruct(nftIds[i]);
+    }
+  }
+
+  function getManyProteinIds(uint[] memory nftIds) public view returns(string[] memory ids) {
+    ids = new string[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      ids[i] = getProteinStruct(nftIds[i]).id;
+    }
+  }
+
+  function getManyProteinSequences(uint[] memory nftIds) public view returns(string[] memory sequences) {
+    sequences = new string[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      sequences[i] = getProteinStruct(nftIds[i]).sequence;
+    }
+  }
+
+  function getManyProteinIpfsHashes(uint[] memory nftIds) public view returns(string[] memory ipfsHashes) {
+    ipfsHashes = new string[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      ipfsHashes[i] = getProteinStruct(nftIds[i]).ipfsHash;
+    }
+  }
+
   function getProteinCount() public view returns(uint count) {
     return proteinIndex.length;
   }

@@ -2,8 +2,17 @@
 
 #### 1.2.2 (2022-08-16)
 
+- BREAKING CHANGES: Removed the TempQuery contract and all its scripts.
+- BREAKING CHANGES: (Temporarily) disabled NaiveQuery.
+- BREAKING CHANGES: Temporarily disabled querying words smaller than the seedSize.
 - Case (in)sensitive functionality for Semi-Blast added.
+- Limiting the amount of results functionality added.
+- Return different datasets on every query.
+- Separated all contracts successfully. IndexerProtein, IndexerSeed and Query are now the three main contracts.
+- Protein Pagination idea is somewhat born by this separation of contracts.
+- Separation of contracts now allows for linking multiple seed sizes to one protein contract.
 - Bugfix: querying for proteins that weren't added yet resulted in a crash.
+- IndexerProtein is linked to the IndexerSeed by storing the seed's contract address in the protein contract.
 
 #### 1.2.1 (2022-08-11)
 
