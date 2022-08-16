@@ -11,6 +11,7 @@
 - Separated all contracts successfully. IndexerProtein, IndexerSeed and Query are now the three main contracts.
 - Protein Pagination idea is somewhat born by this separation of contracts.
 - Separation of contracts now allows for linking multiple seed sizes to one protein contract.
+- Total amount of (detectable) positions can be queried via getIndexerInfo in the IndexerSeed Contract. Detectable positions are the positions that haven't been soft-deleted.
 - Bugfix: querying for proteins that weren't added yet resulted in a crash.
 - IndexerProtein is linked to the IndexerSeed by storing the seed's contract address in the protein contract.
 
