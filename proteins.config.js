@@ -31,15 +31,6 @@ module.exports = {
     query: {
       name: "Query",
       address: "",
-
-      //list of indexers this Query contract should be initialized with.
-      //NOTE: it's not necessary to do this.
-      indexers: [
-        {
-          seedSize: 3,
-          addresses: [],
-        },
-      ],
     },
   },
 
