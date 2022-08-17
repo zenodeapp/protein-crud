@@ -24,10 +24,34 @@ contract QueryNaive {
 
   function queryProteinsById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
   public view returns(Structs.QueryResultProteinStructs memory result) {
-    Structs.QueryResultNftIds memory _result = queryNftIdsById(idQuery, queryOptions, indexerProteinAddress);
+    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.proteins = IndexerProtein(indexerProteinAddress).getManyProteinStructs(_result.nftIds);
+  }
+
+  function querySequencesById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryResultSequences memory result) {
+    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+    
+    result.proteinCount = _result.proteinCount;
+    result.sequences = IndexerProtein(indexerProteinAddress).getManyProteinSequences(_result.nftIds);
+  }
+
+  function queryIdsById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryResultIds memory result) {
+    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+    
+    result.proteinCount = _result.proteinCount;
+    result.ids = IndexerProtein(indexerProteinAddress).getManyProteinIds(_result.nftIds);
+  }
+
+  function queryIpfsHashesById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryResultIpfsHashes memory result) {
+    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+    
+    result.proteinCount = _result.proteinCount;
+    result.ipfsHashes = IndexerProtein(indexerProteinAddress).getManyProteinIpfsHashes(_result.nftIds);
   }
 
   function naiveAlgorithm(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress) 
