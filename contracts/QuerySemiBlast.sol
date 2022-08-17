@@ -138,7 +138,7 @@ contract QuerySemiBlast {
 
           // if nftId's match AND (previous position + seedSize) equals the current position, then we have a match.
           // However, there's an exception to this rule at the last seed, for this word may overlap with the second last word.
-          // See splitWord in QueryHelpers.sol for more information. Particularly the 'forceSize' parameter.
+          // See fragment() in the Strings.sol library for more information. Particularly the 'forceSize' parameter.
           if(nftId == currentSeedPosition.nftId && 
           currentSeedPosition.position == (possibleMatches[i].position + puzzleData.seedSize - 
           (j == puzzleData.positions.length - 1 ? puzzleData.seedTailOverlap : 0))) {
