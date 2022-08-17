@@ -20,10 +20,19 @@ const getIndexerSeedContract = async (hre) => {
   return contract;
 };
 
-const getQueryContract = async (hre) => {
+const getQuerySemiBlastContract = async (hre) => {
   const contract = await hre.ethers.getContractAt(
-    contracts.query.name,
-    contracts.query.address
+    contracts.querySemiBlast.name,
+    contracts.querySemiBlast.address
+  );
+
+  return contract;
+};
+
+const getQueryNaiveContract = async (hre) => {
+  const contract = await hre.ethers.getContractAt(
+    contracts.queryNaive.name,
+    contracts.queryNaive.address
   );
 
   return contract;
@@ -47,9 +56,18 @@ const getIndexerProteinFactory = async (hre, config) => {
   return Factory;
 };
 
-const getQueryFactory = async (hre, config) => {
+const getQuerySemiBlastFactory = async (hre, config) => {
   const Factory = await hre.ethers.getContractFactory(
-    contracts.query.name,
+    contracts.querySemiBlast.name,
+    config
+  );
+
+  return Factory;
+};
+
+const getQueryNaiveFactory = async (hre, config) => {
+  const Factory = await hre.ethers.getContractFactory(
+    contracts.queryNaive.name,
     config
   );
 
@@ -97,8 +115,10 @@ module.exports = {
   getIndexerProteinFactory,
   getIndexerSeedContract,
   getIndexerSeedFactory,
-  getQueryContract,
-  getQueryFactory,
+  getQuerySemiBlastContract,
+  getQuerySemiBlastFactory,
+  getQueryNaiveContract,
+  getQueryNaiveFactory,
   getStringsLibrary,
   getStringsFactory,
   getStructsLibrary,

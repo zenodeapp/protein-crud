@@ -3,7 +3,8 @@ const {
   getIndexerProteinContract,
   getStringsLibrary,
   getIndexerSeedContract,
-  getQueryContract,
+  getQuerySemiBlastContract,
+  getQueryNaiveContract,
 } = require("./helpers/web3");
 const {
   hardDelete,
@@ -253,7 +254,7 @@ task("fragmentWord", "Split a word in multiple segments.")
 //     );
 //   });
 
-/* QUERY CONTRACT */
+/* QUERY SEMI-BLAST CONTRACT */
 task(
   "queryProteinsBySequence",
   "Get all NFTs matching the query using the semi-blast protocol."
@@ -275,13 +276,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQuerySemiBlastContract(hre);
     const { sequence, seedsize, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryProteinsBySequence(
-      contracts.indexerProtein.address,
       sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) }
+      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.proteins);
@@ -311,13 +312,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQuerySemiBlastContract(hre);
     const { sequence, seedsize, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryNftIdsBySequence(
-      contracts.indexerProtein.address,
       sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) }
+      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.nftIds);
@@ -347,13 +348,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQuerySemiBlastContract(hre);
     const { sequence, seedsize, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryIdsBySequence(
-      contracts.indexerProtein.address,
       sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) }
+      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.ids);
@@ -383,13 +384,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQuerySemiBlastContract(hre);
     const { sequence, seedsize, limit, casesensitive } = taskArgs;
 
     const result = await contract.querySequencesBySequence(
-      contracts.indexerProtein.address,
       sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) }
+      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.sequences);
@@ -419,13 +420,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQuerySemiBlastContract(hre);
     const { sequence, seedsize, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryIpfsHashesBySequence(
-      contracts.indexerProtein.address,
       sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) }
+      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.ipfsHashes);
@@ -450,13 +451,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQueryNaiveContract(hre);
     const { id, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryNftIdsById(
-      contracts.indexerProtein.address,
       id,
-      { limit, caseSensitive: eval(casesensitive) }
+      { limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.nftIds);
@@ -481,13 +482,13 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryContract(hre);
+    const contract = await getQueryNaiveContract(hre);
     const { id, limit, casesensitive } = taskArgs;
 
     const result = await contract.queryProteinsById(
-      contracts.indexerProtein.address,
       id,
-      { limit, caseSensitive: eval(casesensitive) }
+      { limit, caseSensitive: eval(casesensitive) },
+      contracts.indexerProtein.address
     );
 
     console.log(result.proteins);

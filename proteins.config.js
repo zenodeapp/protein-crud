@@ -28,8 +28,13 @@ module.exports = {
       seedSize: 3,
     },
 
-    query: {
-      name: "Query",
+    queryNaive: {
+      name: "QueryNaive",
+      address: "",
+    },
+
+    querySemiBlast: {
+      name: "QuerySemiBlast",
       address: "",
     },
   },

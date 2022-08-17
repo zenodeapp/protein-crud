@@ -2,6 +2,7 @@
 
 #### 1.2.2 (2022-08-16)
 
+- Separated Naive and Semi-Blast algorithms into two contracts.
 - It's possible now to query IDs (naive approach), but separate from sequences.
 - BREAKING CHANGES: Removed the TempQuery contract and all its scripts.
 - BREAKING CHANGES: (Temporarily) disabled NaiveQuery.

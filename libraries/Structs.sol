@@ -28,6 +28,31 @@ library Structs {
     uint id;
   }
 
+  struct QueryResultNftIds {
+    uint[] nftIds;
+    uint proteinCount;
+  }
+
+  struct QueryResultSequences {
+    string[] sequences;
+    uint proteinCount;
+  }
+
+  struct QueryResultIds {
+    string[] ids;
+    uint proteinCount;
+  }
+
+  struct QueryResultIpfsHashes {
+    string[] ipfsHashes;
+    uint proteinCount;
+  }
+
+  struct QueryResultProteinStructs {
+    Structs.ProteinStruct[] proteins;
+    uint proteinCount;
+  }
+
   //This function allows us to resize ProteinStruct arrays to appropriate lengths by copying data to a new sized array.
   function resizeArray(ProteinStruct[] memory _from, ProteinStruct[] memory _to, uint _size) public pure returns(ProteinStruct[] memory) {
     _to = new ProteinStruct[](_size);

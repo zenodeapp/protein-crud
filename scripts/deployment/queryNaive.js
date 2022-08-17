@@ -1,4 +1,7 @@
-const { getStringsFactory, getQueryFactory } = require("../../helpers/web3");
+const {
+  getStringsFactory,
+  getQueryNaiveFactory,
+} = require("../../helpers/web3");
 const { libraries } = require("../../proteins.config");
 const hre = require("hardhat");
 
@@ -13,18 +16,18 @@ async function main() {
     stringsLibraryAddress = strings.address;
   }
 
-  const QueryFactory = await getQueryFactory(hre, {
+  const QueryNaiveFactory = await getQueryNaiveFactory(hre, {
     libraries: {
       Strings: stringsLibraryAddress,
     },
   });
-  const query = await QueryFactory.deploy();
+  const queryNaive = await QueryNaiveFactory.deploy();
 
-  await query.deployed();
+  await queryNaive.deployed();
 
   console.log();
-  console.log(`Query contract has been deployed!`);
-  console.log(`Address: ${query.address}`);
+  console.log(`QueryNaive contract has been deployed!`);
+  console.log(`Address: ${queryNaive.address}`);
   if (!libraries.strings.address) {
     console.log();
     console.log(`Strings Library has been deployed!`);
