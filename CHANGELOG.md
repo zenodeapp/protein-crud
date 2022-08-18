@@ -3,7 +3,7 @@
 #### 1.2.3 (2022-08-18)
 
 - Naive algorithm now supports \*-wildcard functionality (but works as ?-wildcards, see: https://support.microsoft.com/en-us/office/examples-of-wildcard-characters-939e153f-bd30-47e4-a763-61897c87b3f4)
-- Union querying has been implemented in the naive algorithm.
+- Union querying has been implemented in the naive algorithm (details: https://www.sqlshack.com/sql-union-overview-usage-and-examples/).
 - Refactored and made the algorithms more cohesive.
 - Helper function queryProtein created and refactored the tasks in hardhat.config.js.
 - Format flag implemented, this allows us to change the return values when querying. Available values are: "protein", "nft", "id", "sequence" and "ipfs".
