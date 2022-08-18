@@ -1,5 +1,4 @@
-# Protein CRUD
-
+# Protein CRUD (This readme is outdated!)
 A basic CRUD for Proteins with string query functionality.
 
 This has been built within the Hardhat environment and is merely a basis for querying protein sequences and PDBID/ACCESSIONs.
