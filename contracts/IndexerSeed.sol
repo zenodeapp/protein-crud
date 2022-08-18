@@ -27,7 +27,7 @@ contract IndexerSeed is CrudSeed {
     return seedSize;
   }
 
-  function getIndexerInfo() public view returns(string memory indexerGroup, uint indexerId, uint seedCount, uint _positionCount, uint _detectablePositions, uint _seedSize) {
+  function getIndexerInfo() public view returns(string memory indexerGroup, uint indexerId, uint seedCount, uint _seedSize, uint _positionCount, uint _detectablePositions) {
     return (indexer.group, indexer.id, getSeedCount(), seedSize, positionCount, detectablePositions);
   }
 }
