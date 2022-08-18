@@ -6,7 +6,6 @@ import '../libraries/Structs.sol';
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
 contract IndexerSeed is CrudSeed {
-  // For instance an indexer group: 'Homo Sapiens', with an ID of 2 would be the second Indexer for this protein type.
   Structs.IndexerStruct public indexer;
 
   // What is the length for each seed contained in this contract?

@@ -14,11 +14,8 @@ contract QuerySemiBlast {
   using Strings for string;
   string[20] aminoAcids;
 
-  struct PuzzleData {
-    Structs.SeedPositionStruct[][] positions;
-    uint proteinCount;
-    uint seedSize;
-    uint seedTailOverlap;
+  struct QueryInput {
+    string sequence; //sequences only for now
   }
 
   struct QueryOptions {
@@ -27,55 +24,62 @@ contract QuerySemiBlast {
     bool caseSensitive;
   }
 
+  struct PuzzleData {
+    Structs.SeedPositionStruct[][] positions;
+    uint proteinCount;
+    uint seedSize;
+    uint seedTailOverlap;
+  }
+
   constructor() {
     aminoAcids = [
-        "A", "R", "N", "D", 
-        "C", "Q", "E", "G", 
-        "H", "I", "L", "K", 
-        "M", "F", "P", "S", 
-        "T", "W", "Y", "V"];
+      "A", "R", "N", "D", 
+      "C", "Q", "E", "G", 
+      "H", "I", "L", "K", 
+      "M", "F", "P", "S", 
+      "T", "W", "Y", "V"];
   }
 
-  function queryNftIdsBySequence(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultNftIds memory result) {
-    return semiBlastAlgorithm(sequenceQuery, queryOptions, indexerProteinAddress);
-  }
-
-  function queryProteinsBySequence(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultProteinStructs memory result) {
-    Structs.QueryResultNftIds memory _result = semiBlastAlgorithm(sequenceQuery, queryOptions, indexerProteinAddress);
+  function queryProteins(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputProteinStructs memory result) {
+    Structs.QueryOutputNftIds memory _result = semiBlastAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.proteins = IndexerProtein(indexerProteinAddress).getManyProteinStructs(_result.nftIds);
   }
 
-  function querySequencesBySequence(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultSequences memory result) {
-    Structs.QueryResultNftIds memory _result = semiBlastAlgorithm(sequenceQuery, queryOptions, indexerProteinAddress);
+  function queryNftIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputNftIds memory result) {
+    return semiBlastAlgorithm(queryInput, queryOptions, indexerProteinAddress);
+  }
+
+  function querySequences(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputSequences memory result) {
+    Structs.QueryOutputNftIds memory _result = semiBlastAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.sequences = IndexerProtein(indexerProteinAddress).getManyProteinSequences(_result.nftIds);
   }
 
-  function queryIdsBySequence(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultIds memory result) {
-    Structs.QueryResultNftIds memory _result = semiBlastAlgorithm(sequenceQuery, queryOptions, indexerProteinAddress);
+  function queryIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputIds memory result) {
+    Structs.QueryOutputNftIds memory _result = semiBlastAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.ids = IndexerProtein(indexerProteinAddress).getManyProteinIds(_result.nftIds);
   }
 
-  function queryIpfsHashesBySequence(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultIpfsHashes memory result) {
-    Structs.QueryResultNftIds memory _result = semiBlastAlgorithm(sequenceQuery, queryOptions, indexerProteinAddress);
+  function queryIpfsHashes(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputIpfsHashes memory result) {
+    Structs.QueryOutputNftIds memory _result = semiBlastAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.ipfsHashes = IndexerProtein(indexerProteinAddress).getManyProteinIpfsHashes(_result.nftIds);
   }
   
-  function semiBlastAlgorithm(string memory sequenceQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  internal view returns(Structs.QueryResultNftIds memory result) {
-    uint wordSize = bytes(sequenceQuery).length;
+  function semiBlastAlgorithm(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  internal view returns(Structs.QueryOutputNftIds memory result) {
+    uint wordSize = bytes(queryInput.sequence).length;
     require(wordSize != 0, "Query can't be empty.");
     
     IndexerProtein indexerProtein = IndexerProtein(indexerProteinAddress);
@@ -88,7 +92,7 @@ contract QuerySemiBlast {
     IndexerSeed indexerSeed = IndexerSeed(indexerSeedAddress);
     require(indexerSeed.getSeedCount() > 0, "In order to query in this manner, seeds have to be inserted first.");
     
-    if(!queryOptions.caseSensitive) sequenceQuery = sequenceQuery.toUpper();
+    if(!queryOptions.caseSensitive) queryInput.sequence = queryInput.sequence.toUpper();
 
     // TODO: If a query is smaller than the seedSize.
     if(wordSize < queryOptions.seedSize) {
@@ -97,7 +101,7 @@ contract QuerySemiBlast {
     }
 
     // Split the query in short w-sized pieces.
-    (string[] memory splittedQuery, uint seedTailSize) = sequenceQuery.fragment(queryOptions.seedSize, queryOptions.seedSize, true);
+    (string[] memory splittedQuery, uint seedTailSize) = queryInput.sequence.fragment(queryOptions.seedSize, queryOptions.seedSize, true);
 
     // Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: CrudSeed.sol or ./datasets/seeds/ on our GitHub.)
     (Structs.SeedPositionStruct[][] memory positions, bool emptyFound) = indexerSeed.getManySeedPositions(splittedQuery, true);
@@ -108,7 +112,7 @@ contract QuerySemiBlast {
 
   // Puzzling the puzzle pieces together. This is the final step of the "SEMI-BLAST" algorithm.
   function puzzleSeedPositions(PuzzleData memory puzzleData, uint limit)
-  internal pure returns(Structs.QueryResultNftIds memory result) {
+  internal pure returns(Structs.QueryOutputNftIds memory result) {
     uint maxQueryAmount = puzzleData.positions[0].length;
 
     uint[] memory _nftIds = new uint[](maxQueryAmount);

@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+const { queryProtein } = require("./helpers/queries");
 const {
   getIndexerProteinContract,
   getStringsLibrary,
@@ -42,15 +43,6 @@ module.exports = {
 };
 
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
-
-/* OWNER CONTRACT */
-// task("addAdmin", "Add a new admin.")
-//   .addParam("address", "The address.")
-//   .setAction(async (taskArgs) => {
-//     const contract = await getIndexerProteinContract();
-
-//     await contract.addAdmin(taskArgs.address);
-//   });
 
 /* PROTEINS CONTRACT */
 task("deleteProtein", "Delete a protein with the given NFT ID.")
@@ -235,264 +227,112 @@ task("fragmentWord", "Split a word in multiple segments.")
     console.log(result);
   });
 
-// task("naiveQuery", "Get all NFTs matching id or sequence with the given query.")
-//   .addOptionalParam("sequence", "The sequence query.", "")
-//   .addOptionalParam("id", "The PDBID/ACCESSION query.", "")
-//   .addOptionalParam(
-//     "exclusive",
-//     "Exclusive would mean that both query restrictions must be true, else one or the other has to be true.",
-//     "false"
-//   )
-//   .setAction(async (taskArgs, hre) => {
-//     const contract = await getQueryContract(hre);
-//     const { id, sequence, exclusive } = taskArgs;
-
-//     const result = await contract.naiveQuery(id, sequence, eval(exclusive));
-//     console.log(result.proteins);
-//     console.log(
-//       `${result.proteinsFound} results found matching query {sequence: "${sequence}", id: "${id}", exclusive: ${exclusive}}.`
-//     );
-//   });
-
-/* QUERY SEMI-BLAST CONTRACT */
+/* QUERYING */
 task(
-  "queryProteinsBySequence",
-  "Get all NFTs matching the query using the semi-blast protocol."
+  "semiBlastQuery",
+  "Get all NFTs matching the query using the semi-blast query protocol."
 )
-  .addParam("sequence", "The sequence query.", "")
+  .addOptionalParam("sequence", "The sequence query.", "")
   .addOptionalParam(
     "seedsize",
     "Seed size to use for querying.",
-    queryOptions.defaultSeedSize
+    queryOptions.defaultSeedSize.toString()
   )
   .addOptionalParam(
     "limit",
     "Limit the amount of results given back.",
-    queryOptions.defaultLimit
+    queryOptions.defaultLimit.toString()
   )
   .addOptionalParam(
     "casesensitive",
     "Case-sensitive lookup.",
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
+  .addOptionalParam(
+    "format",
+    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence" or "ipfs".',
+    queryOptions.defaultFormat
+  )
   .setAction(async (taskArgs, hre) => {
+    const { sequence, seedsize, limit, casesensitive, format } = taskArgs;
+
     const contract = await getQuerySemiBlastContract(hre);
-    const { sequence, seedsize, limit, casesensitive } = taskArgs;
+    const queryInput = { sequence };
+    const queryOptions = {
+      seedSize: parseInt(seedsize),
+      limit: parseInt(limit),
+      caseSensitive: eval(casesensitive),
+    };
 
-    const result = await contract.queryProteinsBySequence(
-      sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
+    if (contract) {
+      const result = await queryProtein(
+        contract,
+        queryInput,
+        queryOptions,
+        format
+      );
 
-    console.log(result.proteins);
-    console.log(
-      `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
+      queryOptions.format = format;
+
+      console.log(result.data);
+      console.log();
+      console.log(`${result.count} results found matching query:`);
+      console.log(queryInput);
+      console.log(queryOptions);
+    }
   });
 
 task(
-  "queryNftIdsBySequence",
-  "Get all NFTs matching the query using the semi-blast protocol."
-)
-  .addParam("sequence", "The sequence query.", "")
-  .addOptionalParam(
-    "seedsize",
-    "Seed size to use for querying.",
-    queryOptions.defaultSeedSize
-  )
-  .addOptionalParam(
-    "limit",
-    "Limit the amount of results given back.",
-    queryOptions.defaultLimit
-  )
-  .addOptionalParam(
-    "casesensitive",
-    "Case-sensitive lookup.",
-    queryOptions.defaultCaseSensitivity ? "true" : "false"
-  )
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getQuerySemiBlastContract(hre);
-    const { sequence, seedsize, limit, casesensitive } = taskArgs;
-
-    const result = await contract.queryNftIdsBySequence(
-      sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
-
-    console.log(result.nftIds);
-    console.log(
-      `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
-  });
-
-task(
-  "queryIdsBySequence",
-  "Get all NFTs matching the query using the semi-blast protocol."
-)
-  .addParam("sequence", "The sequence query.", "")
-  .addOptionalParam(
-    "seedsize",
-    "Seed size to use for querying.",
-    queryOptions.defaultSeedSize
-  )
-  .addOptionalParam(
-    "limit",
-    "Limit the amount of results given back.",
-    queryOptions.defaultLimit
-  )
-  .addOptionalParam(
-    "casesensitive",
-    "Case-sensitive lookup.",
-    queryOptions.defaultCaseSensitivity ? "true" : "false"
-  )
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getQuerySemiBlastContract(hre);
-    const { sequence, seedsize, limit, casesensitive } = taskArgs;
-
-    const result = await contract.queryIdsBySequence(
-      sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
-
-    console.log(result.ids);
-    console.log(
-      `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
-  });
-
-task(
-  "querySequencesBySequence",
-  "Get all NFTs matching the query using the semi-blast protocol."
-)
-  .addParam("sequence", "The sequence query.", "")
-  .addOptionalParam(
-    "seedsize",
-    "Seed size to use for querying.",
-    queryOptions.defaultSeedSize
-  )
-  .addOptionalParam(
-    "limit",
-    "Limit the amount of results given back.",
-    queryOptions.defaultLimit
-  )
-  .addOptionalParam(
-    "casesensitive",
-    "Case-sensitive lookup.",
-    queryOptions.defaultCaseSensitivity ? "true" : "false"
-  )
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getQuerySemiBlastContract(hre);
-    const { sequence, seedsize, limit, casesensitive } = taskArgs;
-
-    const result = await contract.querySequencesBySequence(
-      sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
-
-    console.log(result.sequences);
-    console.log(
-      `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
-  });
-
-task(
-  "queryIpfsHashesBySequence",
-  "Get all NFTs matching the query using the semi-blast protocol."
-)
-  .addParam("sequence", "The sequence query.", "")
-  .addOptionalParam(
-    "seedsize",
-    "Seed size to use for querying.",
-    queryOptions.defaultSeedSize
-  )
-  .addOptionalParam(
-    "limit",
-    "Limit the amount of results given back.",
-    queryOptions.defaultLimit
-  )
-  .addOptionalParam(
-    "casesensitive",
-    "Case-sensitive lookup.",
-    queryOptions.defaultCaseSensitivity ? "true" : "false"
-  )
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getQuerySemiBlastContract(hre);
-    const { sequence, seedsize, limit, casesensitive } = taskArgs;
-
-    const result = await contract.queryIpfsHashesBySequence(
-      sequence,
-      { seedSize: seedsize, limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
-
-    console.log(result.ipfsHashes);
-    console.log(
-      `${result.proteinCount} results found matching query {sequence: "${sequence}", seedsize: ${seedsize}, limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
-  });
-
-task(
-  "queryNftIdsById",
+  "naiveQuery",
   "Get all NFTs matching the query using the naive query protocol."
 )
-  .addParam("id", "The protein's id.", "")
+  .addOptionalParam("sequence", "The sequence query.", "")
+  .addOptionalParam("id", "The PDBID/ACCESSION query.", "")
   .addOptionalParam(
     "limit",
     "Limit the amount of results given back.",
-    queryOptions.defaultLimit
+    queryOptions.defaultLimit.toString()
   )
   .addOptionalParam(
     "casesensitive",
     "Case-sensitive lookup.",
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getQueryNaiveContract(hre);
-    const { id, limit, casesensitive } = taskArgs;
-
-    const result = await contract.queryNftIdsById(
-      id,
-      { limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
-
-    console.log(result.nftIds);
-    console.log(
-      `${result.proteinCount} results found matching query {id: "${id}", limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
-  });
-
-task(
-  "queryProteinsById",
-  "Get all NFTs matching the query using the naive query protocol."
-)
-  .addParam("id", "The protein's id.", "")
   .addOptionalParam(
-    "limit",
-    "Limit the amount of results given back.",
-    queryOptions.defaultLimit
+    "union",
+    "Union query would combine all individual results into one set. E.g. sequence = AAA and id = 1A, would result in all matches for AAA and all matches for 1A.",
+    queryOptions.defaultUnion ? "true" : "false"
   )
   .addOptionalParam(
-    "casesensitive",
-    "Case-sensitive lookup.",
-    queryOptions.defaultCaseSensitivity ? "true" : "false"
+    "format",
+    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence" or "ipfs".',
+    queryOptions.defaultFormat
   )
   .setAction(async (taskArgs, hre) => {
+    const { id, sequence, limit, union, casesensitive, format } = taskArgs;
+
     const contract = await getQueryNaiveContract(hre);
-    const { id, limit, casesensitive } = taskArgs;
+    const queryInput = { id, sequence };
+    const queryOptions = {
+      limit: parseInt(limit),
+      caseSensitive: eval(casesensitive),
+      union: eval(union),
+    };
 
-    const result = await contract.queryProteinsById(
-      id,
-      { limit, caseSensitive: eval(casesensitive) },
-      contracts.indexerProtein.address
-    );
+    if (contract) {
+      const result = await queryProtein(
+        contract,
+        queryInput,
+        queryOptions,
+        format
+      );
 
-    console.log(result.proteins);
-    console.log(
-      `${result.proteinCount} results found matching query {id: "${id}", limit: ${limit}, casesensitive: ${casesensitive}}.`
-    );
+      queryOptions.format = format;
+
+      console.log(result.data);
+      console.log();
+      console.log(`${result.count} results found matching query:`);
+      console.log(queryInput);
+      console.log(queryOptions);
+    }
   });

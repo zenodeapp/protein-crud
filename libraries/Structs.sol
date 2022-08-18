@@ -23,32 +23,33 @@ library Structs {
     uint position;
   }
 
+  // For instance an indexer group: 'Homo Sapiens', with an ID of 2 would be the second Indexer for this protein type.
   struct IndexerStruct {
     string group;
     uint id;
   }
 
-  struct QueryResultNftIds {
+  struct QueryOutputNftIds {
     uint[] nftIds;
     uint proteinCount;
   }
 
-  struct QueryResultSequences {
+  struct QueryOutputSequences {
     string[] sequences;
     uint proteinCount;
   }
 
-  struct QueryResultIds {
+  struct QueryOutputIds {
     string[] ids;
     uint proteinCount;
   }
 
-  struct QueryResultIpfsHashes {
+  struct QueryOutputIpfsHashes {
     string[] ipfsHashes;
     uint proteinCount;
   }
 
-  struct QueryResultProteinStructs {
+  struct QueryOutputProteinStructs {
     Structs.ProteinStruct[] proteins;
     uint proteinCount;
   }

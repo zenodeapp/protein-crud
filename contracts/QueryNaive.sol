@@ -12,52 +12,60 @@ import './IndexerProtein.sol';
 contract QueryNaive {
   using Strings for string;
 
+  struct QueryInput {
+    string id;
+    string sequence;
+  }
+
   struct QueryOptions {
     uint limit;
     bool caseSensitive;
+    bool union; //union query, see: https://www.sqlshack.com/sql-union-overview-usage-and-examples/.
   }
 
-  function queryNftIdsById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultNftIds memory result) {
-    return naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
-  }
-
-  function queryProteinsById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultProteinStructs memory result) {
-    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+  function queryProteins(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputProteinStructs memory result) {
+    Structs.QueryOutputNftIds memory _result = naiveAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.proteins = IndexerProtein(indexerProteinAddress).getManyProteinStructs(_result.nftIds);
   }
 
-  function querySequencesById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultSequences memory result) {
-    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
-    
-    result.proteinCount = _result.proteinCount;
-    result.sequences = IndexerProtein(indexerProteinAddress).getManyProteinSequences(_result.nftIds);
+  function queryNftIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputNftIds memory result) {
+    return naiveAlgorithm(queryInput, queryOptions, indexerProteinAddress);
   }
 
-  function queryIdsById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultIds memory result) {
-    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+  function queryIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputIds memory result) {
+    Structs.QueryOutputNftIds memory _result = naiveAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.ids = IndexerProtein(indexerProteinAddress).getManyProteinIds(_result.nftIds);
   }
 
-  function queryIpfsHashesById(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress)
-  public view returns(Structs.QueryResultIpfsHashes memory result) {
-    Structs.QueryResultNftIds memory _result = naiveAlgorithm(idQuery, queryOptions, indexerProteinAddress);
+  function querySequences(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputSequences memory result) {
+    Structs.QueryOutputNftIds memory _result = naiveAlgorithm(queryInput, queryOptions, indexerProteinAddress);
+    
+    result.proteinCount = _result.proteinCount;
+    result.sequences = IndexerProtein(indexerProteinAddress).getManyProteinSequences(_result.nftIds);
+  }
+
+  function queryIpfsHashes(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputIpfsHashes memory result) {
+    Structs.QueryOutputNftIds memory _result = naiveAlgorithm(queryInput, queryOptions, indexerProteinAddress);
     
     result.proteinCount = _result.proteinCount;
     result.ipfsHashes = IndexerProtein(indexerProteinAddress).getManyProteinIpfsHashes(_result.nftIds);
   }
 
-  function naiveAlgorithm(string memory idQuery, QueryOptions memory queryOptions, address indexerProteinAddress) 
-  internal view returns(Structs.QueryResultNftIds memory result) {
-    uint wordSize = bytes(idQuery).length;
-    require(wordSize != 0, "Query can't be empty.");
+  function naiveAlgorithm(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress) 
+  internal view returns(Structs.QueryOutputNftIds memory result) {
+    bool idIsEmpty = bytes(queryInput.id).length == 0;
+    bool sequenceIsEmpty = bytes(queryInput.sequence).length == 0;
+
+    require(!idIsEmpty || !sequenceIsEmpty, "Query can't be empty.");
     
     IndexerProtein indexerProtein = IndexerProtein(indexerProteinAddress);
     uint proteinCount = indexerProtein.getProteinCount();
@@ -65,12 +73,24 @@ contract QueryNaive {
 
     uint[] memory _nftIds = new uint[](proteinCount);
 
-    if(!queryOptions.caseSensitive) idQuery = idQuery.toUpper();
+    if(!queryOptions.caseSensitive) {
+      if(!idIsEmpty) queryInput.id = queryInput.id.toUpper();
+      if(!sequenceIsEmpty) queryInput.sequence = queryInput.sequence.toUpper();
+    }
 
     for(uint i = 0; i < proteinCount; i++) {
       Structs.ProteinStruct memory _protein = indexerProtein.getProteinStructAtIndex(i);
-    
-      if(idQuery.contains(queryOptions.caseSensitive ? _protein.id : _protein.id.toUpper())) {
+
+      bool idCondition = (!queryOptions.union && idIsEmpty) 
+        || (!idIsEmpty && queryInput.id.contains(queryOptions.caseSensitive ? _protein.id : _protein.id.toUpper(), true));
+      bool sequenceCondition = (!queryOptions.union && sequenceIsEmpty) 
+        || !sequenceIsEmpty && queryInput.sequence.contains(_protein.sequence, true);
+
+      bool condition = queryOptions.union 
+        ? idCondition || sequenceCondition
+        : idCondition && sequenceCondition;
+
+      if(condition) {
           _nftIds[result.proteinCount] = _protein.nftId;
           result.proteinCount++;
 

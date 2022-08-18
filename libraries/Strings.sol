@@ -64,9 +64,12 @@ library Strings {
   }
 
   // From Hermes Ateneo (https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol)
-  function contains(string memory what, string memory where) public pure returns (bool found) {
+  // Extended by Tousuke for wildcards. Currently only works for *: which in our case represents any single character.
+  // This is actually the ?-wildcard according to https://support.microsoft.com/en-us/office/examples-of-wildcard-characters-939e153f-bd30-47e4-a763-61897c87b3f4.
+  function contains(string memory what, string memory where, bool allowWildcards) public pure returns (bool found) {
     bytes memory whatBytes = bytes(what);
     bytes memory whereBytes = bytes(where);
+    bytes1 anyCharacter = bytes1("*");
 
     if (whereBytes.length < whatBytes.length) return false;
 
@@ -75,6 +78,8 @@ library Strings {
       bool flag = true;
 
       for (uint j = 0; j < whatBytes.length; j++) {
+        if (allowWildcards && whatBytes[j] == anyCharacter) continue;
+
         if (whereBytes [i + j] != whatBytes [j]) {
           flag = false;
           break;
