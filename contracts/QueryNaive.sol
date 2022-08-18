@@ -84,7 +84,7 @@ contract QueryNaive {
       bool idCondition = (!queryOptions.union && idIsEmpty) 
         || (!idIsEmpty && queryInput.id.contains(queryOptions.caseSensitive ? _protein.id : _protein.id.toUpper(), true));
       bool sequenceCondition = (!queryOptions.union && sequenceIsEmpty) 
-        || !sequenceIsEmpty && queryInput.sequence.contains(_protein.sequence, true);
+        || (!sequenceIsEmpty && queryInput.sequence.contains(_protein.sequence, true));
 
       bool condition = queryOptions.union 
         ? idCondition || sequenceCondition
