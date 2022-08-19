@@ -85,10 +85,10 @@ module.exports = {
   // However setting bypassRevert to true will prevent Solidity from returning an error message and ignores the request.
   // So if importing failed, but you can't be bothered with figuring out from which ID you should continue, turn this on.
   // Do have in mind that this consumes more gas, for the tx doesn't get reverted!
-  bypassRevert: false,
+  bypassRevert: true,
 
   // So the basic CRUD from Rob Hitchens (found on: https://bitbucket.org/rhitchens2/soliditycrud/src/master/) didn't
   // reset all values from the Struct. Which isn't necessary for this to work, but if you really want to remove everything, when deleting, turn this on.
   // NOTE: Slower and probably double the size when it comes to gas. Also, this can always be run, even if you soft deleted everything first.
-  hardDelete: false,
+  hardDelete: true,
 };
