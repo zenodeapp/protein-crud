@@ -130,6 +130,18 @@ contract CrudProtein is Owner {
     return proteinIndex.length;
   }
 
+    function revertSoftDeletion(uint nftId) public onlyAdmin returns(uint index) {
+    require(!isProtein(nftId) && nftId == proteinStructs[nftId].nftId, "Reverting soft-deletions can only be done on proteins that have been soft-deleted.");
+
+    proteinIndex.push(nftId);
+    proteinStructs[nftId].index = proteinIndex.length - 1;
+
+    Structs.ProteinStruct memory _proteinStruct = proteinStructs[nftId];
+    emit LogNewProtein(nftId, _proteinStruct.index, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash);
+
+    return proteinIndex.length - 1;
+  }
+
   function isProtein(uint nftId) public view returns(bool isIndeed) {
     if(proteinIndex.length == 0) return false;
 

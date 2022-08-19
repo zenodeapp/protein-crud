@@ -31,6 +31,9 @@ contract CrudSeed is Owner {
       require(!exists, "This seed already exists and can't be inserted twice. Update its properties instead.");
     }
 
+    //https://github.com/zenodeapp/protein-crud/issues/18, to prevent inserting on top of old values after soft-deletion
+    require(seedStructs[seed].positions.length == 0, "This seed already has positions stored and likely has been soft-deleted in the past. Either reuse the stored positions by reverting the soft-deletion (revertSoftDeletion()) or hard-delete this seed before attempting to insert it again.");
+
     seedStructs[seed].seed = seed;
     insertSeedPositions(seed, positions);
     
@@ -167,6 +170,19 @@ contract CrudSeed is Owner {
         detectablePositions = detectablePositions - positionsRemoved;
     
       return seedStructs[seed].positions.length;
+  }
+
+  function revertSoftDeletion(string memory seed) public onlyAdmin returns(uint index) {
+    require(!isSeed(seed) && seed.compare(seedStructs[seed].seed), "Reverting soft-deletions can only be done on seeds that have been soft-deleted.");
+
+    seedIndex.push(seed);
+    seedStructs[seed].index = seedIndex.length - 1;
+    detectablePositions = detectablePositions + seedStructs[seed].positions.length;
+
+    Structs.SeedStruct memory _seedStruct = seedStructs[seed];
+    emit LogNewSeed(seed, _seedStruct.index, _seedStruct.positions);
+
+    return seedIndex.length - 1;
   }
 
   function isSeed(string memory seed) public view returns(bool isIndeed) {

@@ -61,6 +61,16 @@ task("deleteProtein", "Delete a protein with the given NFT ID.")
     console.log(result);
   });
 
+task("revertSoftDeletionProtein", "Rever the soft-deletion of a protein.")
+  .addParam("nft", "The NFT ID.")
+  .setAction(async (taskArgs, hre) => {
+    const { nft } = taskArgs;
+    const contract = await getIndexerProteinContract(hre);
+
+    const result = await contract.revertSoftDeletion(nft);
+    console.log(result);
+  });
+
 task("getProtein", "Returns the protein for the given NFT ID.")
   .addParam("nft", "The NFT ID.")
   .setAction(async (taskArgs, hre) => {
@@ -154,10 +164,20 @@ task("deleteSeed", "Delete the given seed.")
   )
   .addOptionalParam("bypass", "Bypass revert.", bypassRevert ? "true" : "false")
   .setAction(async (taskArgs, hre) => {
-    const { nft, hard, bypass } = taskArgs;
+    const { seed, hard, bypass } = taskArgs;
     const contract = await getIndexerSeedContract(hre);
 
-    const result = await contract.deleteSeed(nft, eval(hard), eval(bypass));
+    const result = await contract.deleteSeed(seed, eval(hard), eval(bypass));
+    console.log(result);
+  });
+
+task("revertSoftDeletionSeed", "Rever the soft-deletion of a seed.")
+  .addParam("seed", "The seed phrase.")
+  .setAction(async (taskArgs, hre) => {
+    const { seed } = taskArgs;
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.revertSoftDeletion(seed);
     console.log(result);
   });
 
