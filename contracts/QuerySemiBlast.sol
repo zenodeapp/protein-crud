@@ -4,6 +4,7 @@ import '../libraries/Structs.sol';
 import './IndexerProtein.sol';
 import './IndexerSeed.sol';
 
+import '../node_modules/hardhat/console.sol';
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
@@ -15,7 +16,7 @@ contract QuerySemiBlast {
   string[20] aminoAcids;
 
   struct QueryInput {
-    string sequence; //sequences only for now
+    string sequence;
   }
 
   struct QueryOptions {
@@ -94,20 +95,29 @@ contract QuerySemiBlast {
     
     if(!queryOptions.caseSensitive) queryInput.sequence = queryInput.sequence.toUpper();
 
-    // TODO: If a query is smaller than the seedSize.
-    if(wordSize < queryOptions.seedSize) {
-      // _result = querySmallWords(sequenceQuery, proteinCount);
+    Structs.QueryOutputPositions memory queryOutputPositions;
+    string[] memory splittedQuery;
+    uint seedTailSize;
+
+    if(wordSize >= queryOptions.seedSize) {
+      // Split the query in short w-sized pieces.
+      (splittedQuery, seedTailSize) = queryInput.sequence.fragment(queryOptions.seedSize, queryOptions.seedSize, true);
+
+      // Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: CrudSeed.sol or ./datasets/seeds/ on our GitHub.)
+      queryOutputPositions = indexerSeed.getQueryPositions(splittedQuery, true);
+    } else {
+      // Queries shorter than the seedSize are handled differently. We use wildcards to get all matching positions for this query.
+      queryOutputPositions = indexerSeed.getShortQueryPositions(queryInput.sequence, proteinCount, queryOptions.seedSize);
+    }
+
+    // This is ***
+    if(queryOutputPositions.returnAll) {
+      result = Structs.QueryOutputNftIds(indexerProtein.getProteinIndex(), proteinCount);
       return result;
     }
 
-    // Split the query in short w-sized pieces.
-    (string[] memory splittedQuery, uint seedTailSize) = queryInput.sequence.fragment(queryOptions.seedSize, queryOptions.seedSize, true);
-
-    // Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: CrudSeed.sol or ./datasets/seeds/ on our GitHub.)
-    (Structs.SeedPositionStruct[][] memory positions, bool emptyFound) = indexerSeed.getManySeedPositions(splittedQuery, true);
-
     // Puzzle the w-sized pieces back together and return only the proteins that successfully match our queried string (in this case the NFT IDs).
-    if(!emptyFound) result = puzzleSeedPositions(PuzzleData(positions, proteinCount, queryOptions.seedSize, queryOptions.seedSize - seedTailSize), queryOptions.limit);
+    if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(PuzzleData(queryOutputPositions.positions, proteinCount, queryOptions.seedSize, queryOptions.seedSize - seedTailSize), queryOptions.limit);
   }
 
   // Puzzling the puzzle pieces together. This is the final step of the "SEMI-BLAST" algorithm.
@@ -130,6 +140,13 @@ contract QuerySemiBlast {
       if(nftId > addedProteins.length || addedProteins[nftId - 1]) continue; 
 
       for(uint j = 1; j < puzzleData.positions.length; j++) {
+        
+        //empty arrays are "***"-wildcards (depending on the seedSize, in this case I give an example where seedSize = 3).
+        if(puzzleData.positions[j].length == 0) {
+          possibleMatches[i].position += puzzleData.seedSize;
+          continue;
+        }
+
         for(uint k = 0; k < puzzleData.positions[j].length; k++) {
           Structs.SeedPositionStruct memory currentSeedPosition = puzzleData.positions[j][k];
 
@@ -176,61 +193,4 @@ contract QuerySemiBlast {
     result.nftIds = new uint[](result.proteinCount);
     for(uint i = 0; i < result.proteinCount; i++) result.nftIds[i] = _nftIds[i];
   }
-  
-    // function querySmallWords(string memory smallQuery, uint proteinCount) internal view returns(Structs.ProteinStruct[] memory proteins, uint proteinsFound) {
-  //   require(bytes(smallQuery).length < seedSize, "The query must be smaller than the seed size for this to work.");
-
-  //   uint seedDifference = seedSize - bytes(smallQuery).length;
-
-  //   uint aminoCount = aminoAcids.length**seedDifference;
-  //   uint firstAminoNumber = aminoStartNumber(seedDifference);
-    
-  //   Structs.SeedPositionStruct[][] memory positions = new Structs.SeedPositionStruct[][](aminoCount * 2);
-  //   uint positionsPointer;
-
-  //   Structs.ProteinStruct[] memory _proteins = new Structs.ProteinStruct[](proteinCount);
-  //   bool[] memory addedProteins = new bool[](proteinCount);
-
-  //   for(uint i = firstAminoNumber; i < aminoCount + firstAminoNumber; i++) {
-  //     string memory seed;
-  //     string memory amino = numberToAmino(i);
-
-  //     seed = string.concat(amino, smallQuery);
-  //     positions[positionsPointer] = getSeedPositions(seed);
-  //     positionsPointer++;
-
-  //     seed = string.concat(smallQuery, amino);
-  //     positions[positionsPointer] = getSeedPositions(seed);
-  //     positionsPointer++;
-
-  //     for (uint j = positionsPointer - 2; j < positionsPointer; j++) {
-  //       for(uint k = 0; k < positions[j].length; k++) {
-  //         uint nftId = positions[j][k].nftId;
-  //         if (addedProteins[nftId - 1]) continue;
-
-  //         _proteins[proteinsFound] = proteinStructs[nftId];
-  //         proteinsFound++;
-
-  //         addedProteins[nftId - 1] = true;
-  //       }
-  //     }
-  //   }
-
-  //   proteins =  _proteins.resizeArray(proteins, proteinsFound);
-  // }
-
-  // function numberToAmino(uint number) public view returns(string memory amino) {
-  //   while (number > 0) {
-  //     uint t = (number - 1) % aminoAcids.length;
-  //     amino = string.concat(aminoAcids[t], amino);
-  //     number = (number - t) / aminoAcids.length;
-  //   }
-  // }
-
-  // function aminoStartNumber(uint wordSize) internal view returns(uint start) {
-  //   while(wordSize != 0) {
-  //     wordSize--;
-  //     start = start + (aminoAcids.length**wordSize);
-  //   }
-  // }
 }

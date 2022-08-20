@@ -197,6 +197,38 @@ task(
     console.log(result);
   });
 
+task("deleteWildcard", "Delete the given wildcard.")
+  .addParam("wildcard", "The wildcard.")
+  .addOptionalParam(
+    "hard",
+    "Hard deletion costs more gas.",
+    hardDelete ? "true" : "false"
+  )
+  .addOptionalParam("bypass", "Bypass revert.", bypassRevert ? "true" : "false")
+  .setAction(async (taskArgs, hre) => {
+    const { wildcard, hard, bypass } = taskArgs;
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.deleteWildcard(
+      wildcard,
+      eval(hard),
+      eval(bypass)
+    );
+    console.log(result);
+  });
+
+task(
+  "getWildcard",
+  "Returns all NFTs (with positions) that contain this short seed phrase."
+)
+  .addParam("wildcard", "The wildcard.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.getWildcard(taskArgs.wildcard);
+    console.log(result);
+  });
+
 task("getSeedCount", "How many seeds are included in storage.").setAction(
   async (_, hre) => {
     const contract = await getIndexerSeedContract(hre);
@@ -253,7 +285,7 @@ task("fragmentWord", "Split a word in multiple segments.")
 
 /* QUERYING */
 task(
-  "semiBlastQuery",
+  "querySemiBlast",
   "Get all NFTs matching the query using the semi-blast query protocol."
 )
   .addOptionalParam("sequence", "The sequence query.", "")
@@ -307,7 +339,7 @@ task(
   });
 
 task(
-  "naiveQuery",
+  "queryNaive",
   "Get all NFTs matching the query using the naive query protocol."
 )
   .addOptionalParam("sequence", "The sequence query.", "")

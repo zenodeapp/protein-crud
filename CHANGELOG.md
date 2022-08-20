@@ -1,5 +1,12 @@
 ## BIG DATA ERA
 
+#### 1.2.5 (2022-08-20)
+
+- Fixed issue #1 (query small words) again using wildcards.
+- Semi-blast now supports \*-wildcards (issue #17), it does contain a bug (issue #20).
+- Added wildcards awk files and datasets.
+- Created two functions in IndexerSeed.sol for obtaining all positions, but these should actually be added in QuerySemiBlast.sol instead.
+
 #### 1.2.4 (2022-08-19)
 
 - Fixed soft-deleting seeds bug, issue #18.

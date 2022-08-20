@@ -23,6 +23,13 @@ library Structs {
     uint position;
   }
 
+  struct WildcardStruct {
+    string wildcard;
+    string[] seeds;
+    uint count;
+    uint index;
+  }
+
   // For instance an indexer group: 'Homo Sapiens', with an ID of 2 would be the second Indexer for this protein type.
   struct IndexerStruct {
     string group;
@@ -52,6 +59,12 @@ library Structs {
   struct QueryOutputProteinStructs {
     Structs.ProteinStruct[] proteins;
     uint proteinCount;
+  }
+
+  struct QueryOutputPositions {
+    Structs.SeedPositionStruct[][] positions;
+    bool emptyFound;
+    bool returnAll;
   }
 
   //This function allows us to resize ProteinStruct arrays to appropriate lengths by copying data to a new sized array.

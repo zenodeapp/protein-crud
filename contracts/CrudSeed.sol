@@ -32,7 +32,7 @@ contract CrudSeed is Owner {
     }
 
     //https://github.com/zenodeapp/protein-crud/issues/18, to prevent inserting on top of old values after soft-deletion
-    require(seedStructs[seed].positions.length == 0, "This seed already has positions stored and likely has been soft-deleted in the past. Either reuse the stored positions by reverting the soft-deletion (revertSoftDeletion()) or hard-delete this seed before attempting to insert it again.");
+    require(seedStructs[seed].positions.length == 0, "This seed already has positions stored and likely has been soft-deleted in the past. Either reuse the stored positions by reverting the soft-deletion (undoSeedDeletion()) or hard-delete this seed before attempting to insert it again.");
 
     seedStructs[seed].seed = seed;
     insertSeedPositions(seed, positions);
@@ -172,7 +172,7 @@ contract CrudSeed is Owner {
       return seedStructs[seed].positions.length;
   }
 
-  function revertSoftDeletion(string memory seed) public onlyAdmin returns(uint index) {
+  function undoSeedDeletion(string memory seed) public onlyAdmin returns(uint index) {
     require(!isSeed(seed) && seed.compare(seedStructs[seed].seed), "Reverting soft-deletions can only be done on seeds that have been soft-deleted.");
 
     seedIndex.push(seed);
@@ -210,20 +210,20 @@ contract CrudSeed is Owner {
     return seedStructs[seed].positions;
   }
 
-  function getManySeedPositions(string[] memory seeds, bool returnOnEmpty) public view returns (Structs.SeedPositionStruct[][] memory positions, bool emptyFound) {
-    positions = new Structs.SeedPositionStruct[][](seeds.length);
+  // function getManySeedPositions(string[] memory seeds, bool returnOnEmpty) public view returns (Structs.SeedPositionStruct[][] memory positions, bool emptyFound) {
+  //   positions = new Structs.SeedPositionStruct[][](seeds.length);
 
-    for(uint i = 0; i < seeds.length; i++) {
-      Structs.SeedPositionStruct[] memory _positions = getSeedPositions(seeds[i]);
+  //   for(uint i = 0; i < seeds.length; i++) {
+  //     Structs.SeedPositionStruct[] memory _positions = getSeedPositions(seeds[i]);
 
-      if(returnOnEmpty && _positions.length == 0) {
-        emptyFound = true;
-        break;
-      }
+  //     if(returnOnEmpty && _positions.length == 0) {
+  //       emptyFound = true;
+  //       break;
+  //     }
 
-      positions[i] = _positions;
-    }
-  }
+  //     positions[i] = _positions;
+  //   }
+  // }
 
   function getSeedCount() public view returns(uint count) {
     return seedIndex.length;
