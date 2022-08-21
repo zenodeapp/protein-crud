@@ -189,8 +189,10 @@ contract QuerySemiBlast {
           int nextPosition = int(possibleMatches[i].position) + calculatePositionOffset(puzzleData.pointers[firstValidPosition], puzzleData.pointers[j], puzzleData);
 
 
-          // The current position can't possibly be lower than the next spot, else the sequence would have a starting position of below 0.
-          if(currentSeedPosition.position < ((puzzleData.pointers[j] * puzzleData.seedSize) - (puzzleData.pointers[firstValidPosition] == puzzleData.pointers.length - 1 || puzzleData.pointers[j] == puzzleData.pointers.length - 1 ? puzzleData.seedTailOverlap : 0))) {
+          // The current position can't possibly be lower than what's the next minimum expected position, else the sequence would have a starting position of below 0.
+          if(currentSeedPosition.position < ((puzzleData.pointers[j] * puzzleData.seedSize) - 
+          (puzzleData.pointers[j] != 0 && (puzzleData.pointers[firstValidPosition] == puzzleData.pointers.length - 1 || puzzleData.pointers[j] == puzzleData.pointers.length - 1) 
+          ? puzzleData.seedTailOverlap : 0))) {
             mismatchCounter[i]++;   
             continue;
           }
