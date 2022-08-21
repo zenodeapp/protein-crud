@@ -118,8 +118,7 @@ contract CrudProtein is Owner {
     return proteinIndex.length;
   }
 
-  // May result in an out-of-gas error if the protein size is too big.
-  // Use deleteManyProteins instead if this is the case.
+  // May result in an out-of-gas error if the protein size is too big (use deleteManyProteins instead if this happens).
   function deleteAllProteins(bool hardDelete) public onlyAdmin returns(uint proteinsLeft) {
     uint _proteinLength = proteinIndex.length;
 
@@ -130,7 +129,7 @@ contract CrudProtein is Owner {
     return proteinIndex.length;
   }
 
-    function undoProteinDeletion(uint nftId) public onlyAdmin returns(uint index) {
+  function undoProteinDeletion(uint nftId) public onlyAdmin returns(uint index) {
     require(!isProtein(nftId) && nftId == proteinStructs[nftId].nftId, "Reverting soft-deletions can only be done on proteins that have been soft-deleted.");
 
     proteinIndex.push(nftId);

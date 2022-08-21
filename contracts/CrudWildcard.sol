@@ -7,7 +7,7 @@ import '../libraries/Structs.sol';
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
 //Basis from Rob Hitchens's UserCrud, found on: https://bitbucket.org/rhitchens2/soliditycrud/src/master/
-//Updated to solidity ^0.8.0 and edited/extended for seed strings by Tousuke.
+//Updated to solidity ^0.8.0 and edited/extended for wildcard strings by Tousuke.
 contract CrudWildcard is Owner {
   using Strings for string;
   
@@ -51,15 +51,32 @@ contract CrudWildcard is Owner {
     return wildcardIndex.length - 1;
   }
 
-  function insertWildcardSeed(string memory wildcard, string memory seed) private onlyAdmin {
-    wildcardStructs[wildcard].seeds.push(seed);
+  function updateWildcard(string memory wildcard, string[] memory seeds, bool bypassRevert) 
+  public onlyAdmin returns(bool success) {
+    bool exists = isWildcard(wildcard);
+
+    if(bypassRevert && !exists) {
+      return true;
+    } else {
+      require(exists, "Wildcard could not be found in the database."); 
+    }
+
+    deleteWildcardSeeds(wildcard);
+    insertWildcardSeeds(wildcard, seeds);
+    
+    Structs.WildcardStruct memory _wildcardStruct = wildcardStructs[wildcard];
+    emit LogUpdateWildcard(wildcard, _wildcardStruct.index, _wildcardStruct.seeds, _wildcardStruct.count);
+
+    return true;
   }
 
-  function insertWildcardSeeds(string memory wildcard, 
-  string[] memory seeds) private onlyAdmin {
-    for(uint i = 0; i < seeds.length; i++) {
-      insertWildcardSeed(wildcard, seeds[i]);
+  function updateManyWildcards(string[] memory wildcards, string[][] memory seeds, 
+  bool bypassRevert) public onlyAdmin returns(bool success) {
+    for(uint i = 0; i < wildcards.length; i++) {
+      updateWildcard(wildcards[i], seeds[i], bypassRevert);
     }
+
+    return true;
   }
 
   function deleteWildcard(string memory wildcard, bool hardDelete, bool bypassRevert) 
@@ -101,8 +118,7 @@ contract CrudWildcard is Owner {
     return wildcardIndex.length;
   }
 
-  // May result in an out-of-gas error if the wildcard size is too big.
-  // Use deleteManyWildcards instead if this is the case.
+  // May result in an out-of-gas error if the wildcard size is too big (use deleteManyWildcards instead if this happens).
   function deleteAllWildcards(bool hardDelete) public onlyAdmin returns(uint wildcardSeedsLeft) {
     uint _wildcardLength = wildcardIndex.length;
 
@@ -113,27 +129,48 @@ contract CrudWildcard is Owner {
     return wildcardIndex.length;
   }
 
-  function deleteWildcardSeeds(string memory wildcard) private onlyAdmin returns(uint wildcardSeedsLeft) {
-      uint _wildcardSeedsLength = wildcardStructs[wildcard].seeds.length;
+  function undoWildcardDeletion(string memory wildcard) public onlyAdmin returns(uint index) {
+    require(!isWildcard(wildcard) && wildcard.compare(wildcardStructs[wildcard].wildcard), "Reverting soft-deletions can only be done on wildcards that have been soft-deleted.");
 
-      for(uint i = 0; i < _wildcardSeedsLength; i++) {
-        wildcardStructs[wildcard].seeds.pop();
-      }
+    wildcardIndex.push(wildcard);
+    wildcardStructs[wildcard].index = wildcardIndex.length - 1;
 
-      return wildcardStructs[wildcard].seeds.length;
+    Structs.WildcardStruct memory _wildcardStruct = wildcardStructs[wildcard];
+    emit LogNewWildcard(wildcard, _wildcardStruct.index, _wildcardStruct.seeds, _wildcardStruct.count);
+
+    return wildcardIndex.length - 1;
   }
 
-  // function undoWildcardDeletion(string memory wildcard) public onlyAdmin returns(uint index) {
-  //   require(!isWildcard(wildcard) && wildcard.compare(wildcardStructs[wildcard].wildcard), "Reverting soft-deletions can only be done on seeds that have been soft-deleted.");
+  function insertWildcardSeeds(string memory wildcard, 
+  string[] memory seeds) private onlyAdmin {
+    for(uint i = 0; i < seeds.length; i++) {
+      wildcardStructs[wildcard].seeds.push(seeds[i]);
+    }
+  }
 
-  //   wildcardIndex.push(wildcard);
-  //   wildcardStructs[wildcard].index = wildcardIndex.length - 1;
+  function appendWildcardSeeds(string memory wildcard, 
+  string[] memory seeds) public onlyAdmin {
+    require(isWildcard(wildcard), "Wildcard could not be found in the database.");
 
-  //   Structs.WildcardStruct memory _wildcardStruct = wildcardStructs[wildcard];
-  //   emit LogNewWildcard(wildcard, _wildcardStruct.index, _wildcardStruct.seeds);
+    insertWildcardSeeds(wildcard, seeds);
+  }
 
-  //   return wildcardIndex.length - 1;
-  // }
+  function appendManyWildcardSeeds(string[] memory wildcards, 
+  string[][] memory seeds) public onlyAdmin {
+    for(uint i = 0; i < wildcards.length; i++) {
+      appendWildcardSeeds(wildcards[i], seeds[i]);
+    }
+  }
+
+  function deleteWildcardSeeds(string memory wildcard) private onlyAdmin returns(uint wildcardSeedsLeft) {
+    uint _wildcardSeedsLength = wildcardStructs[wildcard].seeds.length;
+
+    for(uint i = 0; i < _wildcardSeedsLength; i++) {
+      wildcardStructs[wildcard].seeds.pop();
+    }
+
+    return wildcardStructs[wildcard].seeds.length;
+  }
 
   function isWildcard(string memory wildcard) public view returns(bool isIndeed) {
     if(wildcardIndex.length == 0) return false;
@@ -157,8 +194,16 @@ contract CrudWildcard is Owner {
     return wildcardStructs[wildcard];
   }
 
+  function getWildcardSeeds(string memory wildcard) public view returns (string[] memory) {
+    return wildcardStructs[wildcard].seeds;
+  }
+
   function getWildcardCount() public view returns(uint count) {
     return wildcardIndex.length;
+  }
+
+  function getWildcardIndex() public view returns(string[] memory wildcards) {
+    return wildcardIndex;
   }
 
   function getWildcardAtIndex(uint index) public view returns(string memory wildcard) {

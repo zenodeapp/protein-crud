@@ -9,7 +9,7 @@ const hre = require("hardhat");
 async function main() {
   batchCrud(
     await getIndexerSeedContract(hre),
-    manyScripts.files.seedsInsertManyPositions,
+    manyScripts.files.seedsAppendManyPositions,
     manyScripts.seedsPerBatch,
     ["seed", "seeds"],
     async (contract, i, data, keys) => {
@@ -21,18 +21,18 @@ async function main() {
       console.log("======================================================");
       const seedsPositions = seeds.map((seed) => {
         console.log(
-          seed + " will insert " + data[seed].length + " positions..."
+          seed + " will append " + data[seed].length + " positions..."
         );
         return data[seed];
       });
       console.log();
 
-      const insertManySeedPositions = await contract.insertManySeedPositions(
+      const appendManySeedPositions = await contract.appendManySeedPositions(
         seeds,
         seedsPositions
       );
 
-      return insertManySeedPositions;
+      return appendManySeedPositions;
     }
   );
 }

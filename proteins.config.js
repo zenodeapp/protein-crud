@@ -66,7 +66,7 @@ module.exports = {
       wildcardsInsertMany: "datasets/wildcards/wildcard_3_structs_100.txt",
 
       //This allows us to add extra positions to (known) seeds! Useful if you need to add the seed's array in parts!
-      seedsInsertManyPositions: "datasets/seeds/",
+      seedsAppendManyPositions: "datasets/seeds/",
 
       //when deleting, make sure to set this to the file you used for insertion!
       proteinsDeleteMany: "datasets/proteins/protein_structs_100.txt",

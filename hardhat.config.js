@@ -44,7 +44,7 @@ module.exports = {
 
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
-/* PROTEINS CONTRACT */
+/* INDEXER PROTEIN CONTRACT */
 task("deleteProtein", "Delete a protein with the given NFT ID.")
   .addParam("nft", "The NFT ID.")
   .addOptionalParam(
@@ -65,13 +65,13 @@ task("deleteProtein", "Delete a protein with the given NFT ID.")
     console.log(result);
   });
 
-task("revertSoftDeletionProtein", "Revert the soft-deletion of a protein.")
+task("undoProteinDeletion", "Revert the soft-deletion of a protein.")
   .addParam("nft", "The NFT ID.")
   .setAction(async (taskArgs, hre) => {
     const { nft } = taskArgs;
     const contract = await getIndexerProteinContract(hre);
 
-    const result = await contract.revertSoftDeletion(nft);
+    const result = await contract.undoProteinDeletion(nft);
     console.log(result);
   });
 
@@ -158,7 +158,7 @@ task(
   console.log(result);
 });
 
-/* SEEDS CONTRACT */
+/* INDEXER SEED CONTRACT */
 task("deleteSeed", "Delete the given seed.")
   .addParam("seed", "The seed.")
   .addOptionalParam(
@@ -174,29 +174,6 @@ task("deleteSeed", "Delete the given seed.")
     const result = await contract.deleteSeed(seed, eval(hard), eval(bypass));
     console.log(result);
   });
-
-task("revertSoftDeletionSeed", "Revert the soft-deletion of a seed.")
-  .addParam("seed", "The seed phrase.")
-  .setAction(async (taskArgs, hre) => {
-    const { seed } = taskArgs;
-    const contract = await getIndexerSeedContract(hre);
-
-    const result = await contract.revertSoftDeletion(seed);
-    console.log(result);
-  });
-
-task(
-  "getSeed",
-  "Returns all NFTs (with positions) that contain this short seed phrase."
-)
-  .addParam("seed", "The seed.")
-  .setAction(async (taskArgs, hre) => {
-    const contract = await getIndexerSeedContract(hre);
-
-    const result = await contract.getSeed(taskArgs.seed);
-    console.log(result);
-  });
-
 task("deleteWildcard", "Delete the given wildcard.")
   .addParam("wildcard", "The wildcard.")
   .addOptionalParam(
@@ -217,6 +194,36 @@ task("deleteWildcard", "Delete the given wildcard.")
     console.log(result);
   });
 
+task("undoSeedDeletion", "Revert the soft-deletion of a seed.")
+  .addParam("seed", "The seed phrase.")
+  .setAction(async (taskArgs, hre) => {
+    const { seed } = taskArgs;
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.undoSeedDeletion(seed);
+    console.log(result);
+  });
+task("undoWildcardDeletion", "Revert the soft-deletion of a wildcard.")
+  .addParam("wildcard", "The wildcard.")
+  .setAction(async (taskArgs, hre) => {
+    const { seed } = taskArgs;
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.undoWildcardDeletion(seed);
+    console.log(result);
+  });
+
+task(
+  "getSeed",
+  "Returns all NFTs (with positions) that contain this short seed phrase."
+)
+  .addParam("seed", "The seed.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.getSeed(taskArgs.seed);
+    console.log(result);
+  });
 task(
   "getWildcard",
   "Returns all NFTs (with positions) that contain this short seed phrase."
@@ -237,6 +244,15 @@ task("getSeedCount", "How many seeds are included in storage.").setAction(
     console.log(result);
   }
 );
+task(
+  "getWildcardCount",
+  "How many wildcards are included in storage."
+).setAction(async (_, hre) => {
+  const contract = await getIndexerSeedContract(hre);
+
+  const result = await contract.getWildcardCount();
+  console.log(result);
+});
 
 task("getSeedAtIndex", "Returns the seed at the given index.")
   .addParam("index", "The index value.")
@@ -244,6 +260,14 @@ task("getSeedAtIndex", "Returns the seed at the given index.")
     const contract = await getIndexerSeedContract(hre);
 
     const result = await contract.getSeedAtIndex(taskArgs.index);
+    console.log(result);
+  });
+task("getWildcardAtIndex", "Returns the wildcard at the given index.")
+  .addParam("index", "The index value.")
+  .setAction(async (taskArgs, hre) => {
+    const contract = await getIndexerSeedContract(hre);
+
+    const result = await contract.getWildcardAtIndex(taskArgs.index);
     console.log(result);
   });
 

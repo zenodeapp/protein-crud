@@ -118,7 +118,7 @@ contract IndexerSeed is CrudSeed, CrudWildcard {
     }
   }
 
-  function getIndexerInfo() public view returns(string memory indexerGroup, uint indexerId, uint seedCount, uint _seedSize, uint _positionCount, uint _detectablePositions) {
-    return (indexer.group, indexer.id, getSeedCount(), seedSize, positionCount, detectablePositions);
+  function getIndexerInfo() public view returns(string memory indexerGroup, uint indexerId, uint wildcardCount, uint seedCount, uint _seedSize, uint _actualPositionCount, uint _positionCount) {
+    return (indexer.group, indexer.id, getWildcardCount(), getSeedCount(), seedSize, actualPositionCount, positionCount);
   }
 }
