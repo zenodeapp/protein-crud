@@ -207,8 +207,24 @@ contract CrudSeed is Owner {
     return seedStructs[seed];
   }
 
+  function getManySeedStructs(string[] memory seeds) public view returns(Structs.SeedStruct[] memory _seedStructs) {
+    _seedStructs = new Structs.SeedStruct[](seeds.length);
+    
+    for(uint i = 0; i < seeds.length; i++) {
+      _seedStructs[i] = getSeedStruct(seeds[i]);
+    }
+  }
+
   function getSeedPositions(string memory seed) public view returns (Structs.SeedPositionStruct[] memory) {
     return seedStructs[seed].positions;
+  }
+
+  function getManySeedPositions(string[] memory seeds) public view returns (Structs.SeedPositionStruct[][] memory seedPositions) {
+    seedPositions = new Structs.SeedPositionStruct[][](seeds.length);
+    
+    for(uint i = 0; i < seeds.length; i++) {
+      seedPositions[i] = getSeedPositions(seeds[i]);
+    }
   }
 
   function getSeedCount() public view returns(uint count) {

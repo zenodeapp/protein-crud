@@ -4,8 +4,6 @@ import '../libraries/Structs.sol';
 import './IndexerProtein.sol';
 import './IndexerSeed.sol';
 
-import '../node_modules/hardhat/console.sol';
-
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
@@ -14,7 +12,6 @@ import '../node_modules/hardhat/console.sol';
 // Rather than having 'probable' outcomes using scoring matrices and E-values we search for 'exact' matches.
 contract QuerySemiBlast {
   using Strings for string;
-  string[20] aminoAcids;
 
   struct QueryInput {
     string sequence;
@@ -33,15 +30,6 @@ contract QuerySemiBlast {
     uint seedSize;
     uint seedTailOverlap;
     uint limit;
-  }
-
-  constructor() {
-    aminoAcids = [
-      "A", "R", "N", "D", 
-      "C", "Q", "E", "G", 
-      "H", "I", "L", "K", 
-      "M", "F", "P", "S", 
-      "T", "W", "Y", "V"];
   }
 
   function queryProteins(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
@@ -108,12 +96,12 @@ contract QuerySemiBlast {
       (splittedQuery, seedTailSize) = queryInput.sequence.fragment(queryOptions.seedSize, queryOptions.seedSize, true);
 
       // Look where these w-sized pieces could be found in all of our sequences (using a precomputed lookup table, see: CrudSeed.sol or ./datasets/seeds/ on our GitHub.)
-      (queryOutputPositions, pointers) = indexerSeed.getQueryPositions(splittedQuery, true);
-      (queryOutputPositions.positions, pointers) = sort(queryOutputPositions.positions, pointers);
+      (queryOutputPositions, pointers) = getQueryPositions(splittedQuery, true, indexerSeed);
+      (queryOutputPositions.positions, pointers) = sortQueryPositions(queryOutputPositions.positions, pointers);
     } else {
       // Queries shorter than the seedSize are handled differently. We use wildcards to get all matching positions for this query.
       pointers = new uint[](1);
-      queryOutputPositions = indexerSeed.getShortQueryPositions(queryInput.sequence, proteinCount, queryOptions.seedSize);
+      queryOutputPositions = getShortQueryPositions(queryInput.sequence, proteinCount, queryOptions.seedSize, indexerSeed);
     }
 
     // returnAll is true if only *'s are found in the query.
@@ -125,24 +113,93 @@ contract QuerySemiBlast {
     // Puzzle the w-sized pieces back together and return only the proteins that successfully match our queried string (in this case the NFT IDs).
     if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(PuzzleData(queryOutputPositions.positions, pointers, proteinCount, queryOptions.seedSize, queryOptions.seedSize - seedTailSize, queryOptions.limit));
   }
-  
-  function calculatePositionOffset(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
-  internal pure returns(int positionOffset) {
-    int pointerDiff = int(currentPointer) - int(startPointer);
-    positionOffset = pointerDiff * int(puzzleData.seedSize) + (startPointer == puzzleData.pointers.length - 1 || currentPointer == puzzleData.pointers.length - 1 
-      ? (pointerDiff > 0 ? -1 * int(puzzleData.seedTailOverlap) : int(puzzleData.seedTailOverlap))
-      : int(0));
+
+  // Getting all the positions. This is the second step of the "SEMI-BLAST" algorithm.
+  function getQueryPositions(string[] memory seeds, bool returnOnEmpty, IndexerSeed indexerSeed)
+  internal view returns (Structs.QueryOutputPositions memory queryOutputPositions, uint[] memory pointers) {
+    queryOutputPositions.positions = new Structs.SeedPositionStruct[][](seeds.length);
+    pointers = new uint[](seeds.length);
+    queryOutputPositions.returnAll = true;
+
+    Structs.SeedPositionStruct[] memory _positions;
     
-    return positionOffset;
+    for(uint i = 0; i < seeds.length; i++) {
+      if(indexerSeed.isWildcard(seeds[i])) {
+        Structs.WildcardStruct memory wildcardStruct = indexerSeed.getWildcardStruct(seeds[i]);
+        
+        _positions = new Structs.SeedPositionStruct[](wildcardStruct.count);
+
+        uint wildcardPointer = 0;
+
+        for (uint j = 0; j < wildcardStruct.seeds.length; j++) {
+          Structs.SeedPositionStruct[] memory _wildcardPositions = indexerSeed.getSeedPositions(wildcardStruct.seeds[j]);
+
+          for (uint k = 0; k < _wildcardPositions.length; k++) {
+            _positions[wildcardPointer] = _wildcardPositions[k];
+            wildcardPointer++;
+          }
+        }
+
+        queryOutputPositions.returnAll = queryOutputPositions.returnAll && _positions.length == 0;
+      } else {
+        _positions = indexerSeed.getSeedPositions(seeds[i]);
+        queryOutputPositions.returnAll = false;
+
+        if(returnOnEmpty && _positions.length == 0) {
+          queryOutputPositions.emptyFound = true;
+          break;
+        }
+      }
+
+      pointers[i] = i;
+      queryOutputPositions.positions[i] = _positions;
+    }
   }
 
-  function getValidPositionIndex(PuzzleData memory puzzleData) internal pure returns(uint validIndex) {
-    for(uint i = 0; i < puzzleData.positions.length; i++) {
-      if(puzzleData.positions[i].length > 0) {
-        validIndex = i;
-        break;
+  // Getting all the positions for short queries.
+  function getShortQueryPositions(string memory shortQuery, uint _proteinCount, uint _seedSize, IndexerSeed indexerSeed)
+  internal view returns (Structs.QueryOutputPositions memory queryOutputPositions) {
+    queryOutputPositions.positions = new Structs.SeedPositionStruct[][](1);
+
+    string memory wildcardPart = repeatChar("*", _seedSize - bytes(shortQuery).length);
+    string memory wildcardHead = string.concat(shortQuery, wildcardPart);
+    string memory wildcardTail = string.concat(wildcardPart, shortQuery);
+
+    if(!indexerSeed.isWildcard(wildcardHead) && !indexerSeed.isWildcard(wildcardTail)) {
+      queryOutputPositions.emptyFound = true;
+      queryOutputPositions.returnAll = false;
+      return queryOutputPositions;
+    }
+
+    Structs.WildcardStruct[2] memory _wildcardStructs = [indexerSeed.getWildcardStruct(wildcardHead), indexerSeed.getWildcardStruct(wildcardTail)];
+    Structs.SeedPositionStruct[] memory _positions = new Structs.SeedPositionStruct[](_wildcardStructs[0].count + _wildcardStructs[1].count);
+    bool[] memory addedProteins = new bool[](_proteinCount);
+
+    uint wildcardPointer = 0;
+    
+    for (uint i = 0; i < _wildcardStructs.length; i++) {
+      for (uint j = 0; j < _wildcardStructs[i].seeds.length; j++) {
+        Structs.SeedPositionStruct[] memory wildcardPositions = indexerSeed.getSeedPositions(_wildcardStructs[i].seeds[j]);
+
+        for (uint k = 0; k < wildcardPositions.length; k++) {
+          if(!addedProteins[wildcardPositions[k].nftId - 1]) {
+            _positions[wildcardPointer] = wildcardPositions[k];
+            wildcardPointer++;
+
+            addedProteins[wildcardPositions[k].nftId - 1] = true;
+          }
+        }
       }
     }
+
+    queryOutputPositions.emptyFound = false;
+    queryOutputPositions.returnAll = _positions.length == 0;
+
+    queryOutputPositions.positions[0] = new Structs.SeedPositionStruct[](wildcardPointer);
+
+    for(uint i = 0; i < wildcardPointer; i++) queryOutputPositions.positions[0][i] = _positions[i];
+
+    return queryOutputPositions;
   }
 
   // Puzzling the puzzle pieces together. This is the final step of the "SEMI-BLAST" algorithm.
@@ -233,33 +290,64 @@ contract QuerySemiBlast {
     for(uint i = 0; i < result.proteinCount; i++) result.nftIds[i] = _nftIds[i];
   }
 
-
-  // Basis from Subhodi: https://gist.github.com/subhodi/b3b86cc13ad2636420963e692a4d896f
-  // Altered for our needs.
-  function sort(Structs.SeedPositionStruct[][] memory positions, uint[] memory pointers)
-  public pure returns(Structs.SeedPositionStruct[][] memory, uint[] memory) {
-       quickSort(positions, pointers, int(0), int(positions.length - 1));
-       return (positions, pointers);
-    }
+  function calculatePositionOffset(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
+  internal pure returns(int positionOffset) {
+    int pointerDiff = int(currentPointer) - int(startPointer);
+    positionOffset = pointerDiff * int(puzzleData.seedSize) + (startPointer == puzzleData.pointers.length - 1 || currentPointer == puzzleData.pointers.length - 1 
+      ? (pointerDiff > 0 ? -1 * int(puzzleData.seedTailOverlap) : int(puzzleData.seedTailOverlap))
+      : int(0));
     
-    function quickSort(Structs.SeedPositionStruct[][] memory positions, uint[] memory pointers, int left, int right) internal pure {
-        int i = left;
-        int j = right;
-        if(i==j) return;
-        uint pivot = positions[uint(left + (right - left) / 2)].length;
-        while (i <= j) {
-            while (positions[uint(i)].length < pivot) i++;
-            while (pivot < positions[uint(j)].length) j--;
-            if (i <= j) {
-                (positions[uint(i)], positions[uint(j)]) = (positions[uint(j)], positions[uint(i)]);
-                (pointers[uint(i)], pointers[uint(j)]) = (pointers[uint(j)], pointers[uint(i)]);
-                i++;
-                j--;
-            }
-        }
-        if (left < j)
-            quickSort(positions, pointers, left, j);
-        if (i < right)
-            quickSort(positions, pointers, i, right);
+    return positionOffset;
+  }
+
+  function getValidPositionIndex(PuzzleData memory puzzleData) internal pure returns(uint validIndex) {
+    for(uint i = 0; i < puzzleData.positions.length; i++) {
+      if(puzzleData.positions[i].length > 0) {
+        validIndex = i;
+        break;
+      }
     }
+  }
+
+  // Basis from Subhodi, but altered for our needs (https://gist.github.com/subhodi/b3b86cc13ad2636420963e692a4d896f)
+  function sortQueryPositions(Structs.SeedPositionStruct[][] memory positions, uint[] memory pointers)
+  internal pure returns(Structs.SeedPositionStruct[][] memory, uint[] memory) {
+    quickSortQueryPositions(positions, pointers, int(0), int(positions.length - 1));
+
+    return (positions, pointers);
+  }
+    
+  function quickSortQueryPositions(Structs.SeedPositionStruct[][] memory positions, uint[] memory pointers, int left, int right)
+  internal pure {
+    int i = left;
+    int j = right;
+
+    if(i == j) return;
+
+    uint pivot = positions[uint(left + (right - left) / 2)].length;
+
+    while(i <= j) {
+      while (positions[uint(i)].length < pivot) i++;
+      while (pivot < positions[uint(j)].length) j--;
+
+      if (i <= j) {
+        (positions[uint(i)], positions[uint(j)]) = (positions[uint(j)], positions[uint(i)]);
+        (pointers[uint(i)], pointers[uint(j)]) = (pointers[uint(j)], pointers[uint(i)]);
+        
+        i++;
+        j--;
+      }
+    }
+
+    if (left < j) quickSortQueryPositions(positions, pointers, left, j);
+    if (i < right) quickSortQueryPositions(positions, pointers, i, right);
+  }
+
+  function repeatChar(bytes1 char, uint count) private pure returns(string memory) {
+    bytes memory bStr = new bytes(count);
+
+    for(uint i = 0; i < count; i++) bStr[i] = char;
+
+    return string(bStr);
+  }
 }
