@@ -4,6 +4,8 @@ import '../libraries/Structs.sol';
 import './IndexerProtein.sol';
 import './IndexerSeed.sol';
 
+import '../node_modules/hardhat/console.sol';
+
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
@@ -30,6 +32,7 @@ contract QuerySemiBlast {
     uint proteinCount;
     uint seedSize;
     uint seedTailOverlap;
+    uint limit;
   }
 
   constructor() {
@@ -120,13 +123,13 @@ contract QuerySemiBlast {
     }
 
     // Puzzle the w-sized pieces back together and return only the proteins that successfully match our queried string (in this case the NFT IDs).
-    if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(PuzzleData(queryOutputPositions.positions, pointers, proteinCount, queryOptions.seedSize, queryOptions.seedSize - seedTailSize), queryOptions.limit);
+    if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(PuzzleData(queryOutputPositions.positions, pointers, proteinCount, queryOptions.seedSize, queryOptions.seedSize - seedTailSize, queryOptions.limit));
   }
   
-  function calculatePositionOffset(uint currentPointer, PuzzleData memory puzzleData)
+  function calculatePositionOffset(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
   internal pure returns(int positionOffset) {
-    int pointerDiff = int(currentPointer) - int(puzzleData.pointers[0]);
-    positionOffset = pointerDiff * int(puzzleData.seedSize) + (puzzleData.pointers[0] == puzzleData.pointers.length - 1 || currentPointer == puzzleData.pointers.length - 1 
+    int pointerDiff = int(currentPointer) - int(startPointer);
+    positionOffset = pointerDiff * int(puzzleData.seedSize) + (startPointer == puzzleData.pointers.length - 1 || currentPointer == puzzleData.pointers.length - 1 
       ? (pointerDiff > 0 ? -1 * int(puzzleData.seedTailOverlap) : int(puzzleData.seedTailOverlap))
       : int(0));
     
@@ -143,7 +146,7 @@ contract QuerySemiBlast {
   }
 
   // Puzzling the puzzle pieces together. This is the final step of the "SEMI-BLAST" algorithm.
-  function puzzleSeedPositions(PuzzleData memory puzzleData, uint limit)
+  function puzzleSeedPositions(PuzzleData memory puzzleData)
   internal pure returns(Structs.QueryOutputNftIds memory result) {
     uint firstValidPosition = getValidPositionIndex(puzzleData);
     uint maxQueryAmount = puzzleData.positions[firstValidPosition].length;
@@ -160,6 +163,14 @@ contract QuerySemiBlast {
       // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.
       if(possibleMatches[i].nftId > addedProteins.length || addedProteins[possibleMatches[i].nftId - 1]) continue; 
 
+      // If there's only one 3 letter word and the rest were ***'s
+      if(firstValidPosition != 0 && firstValidPosition == puzzleData.positions.length - 1) {
+        // 
+        if(possibleMatches[i].position < (puzzleData.seedSize - puzzleData.seedTailOverlap)) {
+          continue;
+        }
+      }
+
       for(uint j = firstValidPosition + 1; j < puzzleData.positions.length; j++) {
         
         //empty arrays are "***"-wildcards (depending on the seedSize, in this case I give an example where seedSize = 3).
@@ -175,10 +186,11 @@ contract QuerySemiBlast {
             continue;
           }
           
-          int nextPosition = int(possibleMatches[i].position) + calculatePositionOffset(puzzleData.pointers[j], puzzleData);
+          int nextPosition = int(possibleMatches[i].position) + calculatePositionOffset(puzzleData.pointers[firstValidPosition], puzzleData.pointers[j], puzzleData);
+
 
           // The current position can't possibly be lower than the next spot, else the sequence would have a starting position of below 0.
-          if(int(currentSeedPosition.position) < nextPosition) {
+          if(currentSeedPosition.position < ((puzzleData.pointers[j] * puzzleData.seedSize) - (puzzleData.pointers[firstValidPosition] == puzzleData.pointers.length - 1 || puzzleData.pointers[j] == puzzleData.pointers.length - 1 ? puzzleData.seedTailOverlap : 0))) {
             mismatchCounter[i]++;   
             continue;
           }
@@ -211,7 +223,7 @@ contract QuerySemiBlast {
       addedProteins[possibleMatches[i].nftId - 1] = true;
 
       // Stop looking for more if we found enough matching proteins.
-      if(result.proteinCount == limit) break;
+      if(result.proteinCount == puzzleData.limit) break;
     }
 
     // Shrink the size of the resulting array
