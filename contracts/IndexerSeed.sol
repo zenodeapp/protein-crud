@@ -75,13 +75,15 @@ contract IndexerSeed is CrudSeed, CrudWildcard {
     queryOutputPositions.returnAll = _positions.length == 0;
 
     queryOutputPositions.positions[0] = new Structs.SeedPositionStruct[](wildcardPointer);
+
     for(uint i = 0; i < wildcardPointer; i++) queryOutputPositions.positions[0][i] = _positions[i];
 
     return queryOutputPositions;
   }
 
-  function getQueryPositions(string[] memory seeds, bool returnOnEmpty) public view returns (Structs.QueryOutputPositions memory queryOutputPositions) {
+  function getQueryPositions(string[] memory seeds, bool returnOnEmpty) public view returns (Structs.QueryOutputPositions memory queryOutputPositions, uint[] memory pointers) {
     queryOutputPositions.positions = new Structs.SeedPositionStruct[][](seeds.length);
+    pointers = new uint[](seeds.length);
     queryOutputPositions.returnAll = true;
 
     Structs.SeedPositionStruct[] memory _positions;
@@ -114,6 +116,7 @@ contract IndexerSeed is CrudSeed, CrudWildcard {
         }
       }
 
+      pointers[i] = i;
       queryOutputPositions.positions[i] = _positions;
     }
   }

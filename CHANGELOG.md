@@ -1,5 +1,10 @@
 ## BIG DATA ERA
 
+#### 1.2.6 (2022-08-21)
+
+- QuerySemiBlast.sol now uses Quicksort to first found out which three letter word is the smallest (issue #12)
+- Fixed the incorrect query result issue with \*\*\*'s (issue #20).
+
 #### 1.2.5 (2022-08-20)
 
 - Fixed issue #1 (query small words) again using wildcards.

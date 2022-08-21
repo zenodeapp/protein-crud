@@ -57,12 +57,12 @@ library Structs {
   }
 
   struct QueryOutputProteinStructs {
-    Structs.ProteinStruct[] proteins;
+    ProteinStruct[] proteins;
     uint proteinCount;
   }
 
   struct QueryOutputPositions {
-    Structs.SeedPositionStruct[][] positions;
+    SeedPositionStruct[][] positions;
     bool emptyFound;
     bool returnAll;
   }
