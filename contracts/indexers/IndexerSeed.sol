@@ -1,7 +1,7 @@
 pragma solidity ^0.8.12;
-import './CrudSeed.sol';
-import './CrudWildcard.sol';
-import '../libraries/Structs.sol';
+import '../cruds/CrudSeed.sol';
+import '../cruds/CrudWildcard.sol';
+import '../../libraries/Structs.sol';
 
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).

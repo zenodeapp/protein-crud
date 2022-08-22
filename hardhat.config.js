@@ -104,8 +104,8 @@ task("getProteinAtIndex", "Returns the NFT ID at the given index.")
   });
 
 task(
-  "insertSeedAddress",
-  "Inserts a new seed address in the proteins contract."
+  "createSeedLink",
+  "Creates a link between a protein contract and a seed address."
 )
   .addParam(
     "address",
@@ -115,31 +115,34 @@ task(
   .setAction(async (taskArgs, hre) => {
     const contract = await getIndexerProteinContract(hre);
 
-    await contract.insertSeedAddress(taskArgs.address);
+    await contract.createSeedLink(taskArgs.address);
   });
 
-task("updateSeedAddress", "Update the seed address for a given seed size.")
+task(
+  "updateSeedLink",
+  "Update the seed address for a given seed size in a protein contract."
+)
   .addParam("seedsize", "The seed size.")
   .addParam("address", "The seed address to add to the protein indexer.")
   .setAction(async (taskArgs, hre) => {
     const { seedsize, address } = taskArgs;
     const contract = await getIndexerProteinContract(hre);
 
-    await contract.updateSeedAddress(seedsize, address);
+    await contract.updateSeedLink(seedsize, address);
   });
 
 task(
-  "deleteSeedAddress",
-  "Delete the stored seed address for a given seed size."
+  "destroySeedLink",
+  "Delete the stored seed address for a given seed size in a protein contract."
 )
   .addParam("seedsize", "The seed size.")
   .setAction(async (taskArgs, hre) => {
     const contract = await getIndexerProteinContract(hre);
 
-    await contract.deleteSeedAddress(taskArgs.seedsize);
+    await contract.destroySeedLink(taskArgs.seedsize);
   });
 
-task("getSeedAddress", "Get the stored seed address for a given seed size.")
+task("getSeedLink", "Get the stored seed address for a given seed size.")
   .addParam("seedsize", "The seed size.")
   .setAction(async (taskArgs, hre) => {
     const contract = await getIndexerProteinContract(hre);

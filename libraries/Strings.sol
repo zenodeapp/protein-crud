@@ -58,6 +58,13 @@ library Strings {
     }
   }
 
+  // Take notice: this function is not used on strings, but on bytes1.
+  function repeatChar(bytes1 char, uint count) public pure returns(string memory) {
+    bytes memory bStr = new bytes(count);
+    for(uint i = 0; i < count; i++) bStr[i] = char;
+    return string(bStr);
+  }
+
   // https://ethereum.stackexchange.com/questions/30912/how-to-compare-strings-in-solidity
   function compare(string memory a, string memory b) public pure returns (bool) {
     return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));

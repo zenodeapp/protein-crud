@@ -1,6 +1,6 @@
 pragma solidity ^0.8.12;
-import './Owner.sol';
-import '../libraries/Structs.sol';
+import '../base/Owner.sol';
+import '../../libraries/Structs.sol';
 
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).

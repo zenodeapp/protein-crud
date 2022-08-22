@@ -1,13 +1,14 @@
 pragma solidity ^0.8.12;
-import './Owner.sol';
-import '../libraries/Strings.sol';
-import '../libraries/Structs.sol';
+import '../base/Owner.sol';
+import '../../libraries/Strings.sol';
+import '../../libraries/Structs.sol';
 
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
 //Basis from Rob Hitchens's UserCrud, found on: https://bitbucket.org/rhitchens2/soliditycrud/src/master/
 //Updated to solidity ^0.8.0 and edited/extended for wildcard strings by Tousuke.
+
 contract CrudWildcard is Owner {
   using Strings for string;
   

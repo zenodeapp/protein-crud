@@ -1,6 +1,6 @@
 pragma solidity ^0.8.12;
-import './CrudProtein.sol';
-import '../libraries/Structs.sol';
+import '../cruds/CrudProtein.sol';
+import '../../libraries/Structs.sol';
 import './IndexerSeed.sol';
 
 //SPDX-License-Identifier: UNLICENSED
@@ -20,7 +20,7 @@ contract IndexerProtein is CrudProtein {
     return indexer;
   }
 
-  function insertSeedAddress(address indexerSeedAddress) public onlyAdmin returns(uint seedSize, address seedAddress){
+  function createSeedLink(address indexerSeedAddress) public onlyAdmin returns(uint seedSize, address seedAddress){
     IndexerSeed indexerSeed = IndexerSeed(indexerSeedAddress);
     seedSize = indexerSeed.seedSize();
 
@@ -30,7 +30,7 @@ contract IndexerProtein is CrudProtein {
     return(seedSize, seedAddress);
   }
 
-  function updateSeedAddress(uint _seedSize, address newIndexerSeedAddress) public onlyAdmin {
+  function updateSeedLink(uint _seedSize, address newIndexerSeedAddress) public onlyAdmin {
     IndexerSeed indexerSeed = IndexerSeed(newIndexerSeedAddress);
     require(indexerSeed.seedSize() == _seedSize, "Can't update address at seed size because the seed address' seedSize differs from the given value.");
     require(seedAddresses[_seedSize] != address(0), "No address found at this seed size. Insert this seed address instead.");
@@ -38,11 +38,11 @@ contract IndexerProtein is CrudProtein {
     seedAddresses[_seedSize] = newIndexerSeedAddress;
   }
 
-  function deleteSeedAddress(uint _seedSize) public onlyAdmin {
+  function destroySeedLink(uint _seedSize) public onlyAdmin {
     seedAddresses[_seedSize] = address(0);
   }
 
-  function getSeedAddress(uint _seedSize) public view returns(address seedAddress) {
+  function getSeedLink(uint _seedSize) public view returns(address seedAddress) {
     return seedAddresses[_seedSize];
   }
 

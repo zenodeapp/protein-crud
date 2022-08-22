@@ -46,6 +46,10 @@ module.exports = {
       name: "Strings",
       address: "",
     },
+    structs: {
+      name: "Structs",
+      address: "",
+    },
   },
 
   manyScripts: {
