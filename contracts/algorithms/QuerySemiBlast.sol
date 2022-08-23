@@ -95,13 +95,13 @@ contract QuerySemiBlast is QueryAbstract {
       // This will return data about all positions found, plus an array of pointers telling the position for every seed (e.g. [AAA, SRE, IIE] => [0, 1, 2]).
       (queryOutputPositions, pointers) = getSeedPositions(splittedQuery, indexerSeed);
 
-      // Sort the w-sized pieces in an ascending order (based on the amount of positions each seed holds. (e.g. [SRE, IIE, AAA] => [1, 2, 0])
+      // Sort the w-sized pieces in an ascending order (based on the amount of positions each seed holds; e.g. positions: [SRE, IIE, AAA] => pointers: [1, 2, 0])
       (queryOutputPositions.positions, pointers) = queryOutputPositions.positions.sort(pointers);
     } else {
-      // Split the query in short w-sized pieces. (e.g. AAASREIIE => [AAA, SRE, IIE])
+      // Create wildcards from the short query (e.g. SR => [*SR, SR*] or S => [**S, S**]). We always need to create a heads and tails variant of the query (the two edge cases).
       Structs.WildcardStruct[2] memory wildcards = createWildcards(queryInput.sequence, queryOptions.seedSize, indexerSeed);
 
-      // Queries shorter than the seedSize don't have to be split. We handle the search for positions differently by using wildcards. (e.g. SR => [*SR, SR*] or S => [**S, S**])
+      // The search for positions is slightly different for short queries (namely: all positions found are valid, so heap them all together in one giant list).
       queryOutputPositions = getWildcardPositions(wildcards, proteinCount, indexerSeed);
       
       // There is only one pointer in a short query, namely: [0].
@@ -176,10 +176,11 @@ contract QuerySemiBlast is QueryAbstract {
     }
   }
 
-  // Getting all the positions for short queries.
+  // Second step for semi-blast's short query variant.
   function getWildcardPositions(Structs.WildcardStruct[2] memory wildcards, uint _proteinCount, IndexerSeed indexerSeed)
   internal view returns (Structs.QueryOutputPositions memory queryOutputPositions) {
-    if(!indexerSeed.isWildcard(wildcards[0].wildcard) && !indexerSeed.isWildcard(wildcards[1].wildcard)) {
+    if(!indexerSeed.isWildcard(wildcards[0].wildcard) 
+    && !indexerSeed.isWildcard(wildcards[1].wildcard)) {
       queryOutputPositions.emptyFound = true;
       queryOutputPositions.returnAll = false;
       return queryOutputPositions;
@@ -192,7 +193,7 @@ contract QuerySemiBlast is QueryAbstract {
     uint wildcardPointer = 0;
     for (uint i = 0; i < wildcards.length; i++) {
       for (uint j = 0; j < wildcards[i].seeds.length; j++) {
-        // Similar as before, I'm uncertain if an external function call inside a loop becomes a problem.
+        // Similar as before, I'm uncertain if an external function call inside a loop could eventually become a problem.
         Structs.SeedPositionStruct[] memory wildcardPositions = indexerSeed.getSeedPositions(wildcards[i].seeds[j]);
 
         for (uint k = 0; k < wildcardPositions.length; k++) {
@@ -216,10 +217,10 @@ contract QuerySemiBlast is QueryAbstract {
     return queryOutputPositions;
   }
 
-  // Puzzling the puzzle pieces together. This is the biggest and final step of the "SEMI-BLAST" algorithm.
+  // Third step: puzzling the pieces together. This is the biggest and final step of the "SEMI-BLAST" algorithm.
   function puzzleSeedPositions(PuzzleData memory puzzleData)
   internal pure returns(Structs.QueryOutputNftIds memory result) {
-    // Make sure that we are not taking *** as our reference point
+    // This makes sure that we are not taking *** as our reference point
     uint validPosition = getValidPositionIndex(puzzleData);
 
     // Limit our amount of queries to the smallest set
@@ -241,12 +242,12 @@ contract QuerySemiBlast is QueryAbstract {
       // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.
       if(candidates[i].nftId > addedProteins.length || addedProteins[candidates[i].nftId - 1]) continue; 
 
-      // If there's only one 3 letter word and the rest were ***'s
-      if(validPosition != 0 && validPosition == puzzleData.positions.length - 1) {
-        if(candidates[i].position < (puzzleData.seedSize - puzzleData.seedTailOverlap)) {
-          continue;
-        }
-      }
+      // If there's only one 3 letter word amongst ***'s then skip if the position is smaller than the minimum expected value.
+      if(positionTooSmall(
+          puzzleData, 
+          puzzleData.pointers[validPosition], 
+          puzzleData.pointers[validPosition], 
+          candidates[i].position)) continue;
 
       for(uint j = validPosition + 1; j < puzzleData.positions.length; j++) {
         //empty arrays are "***"-wildcards, skip these.
@@ -262,15 +263,17 @@ contract QuerySemiBlast is QueryAbstract {
             continue;
           }
           
-          int expectedPosition = int(candidates[i].position) + distanceToNextPosition(puzzleData.pointers[validPosition], puzzleData.pointers[j], puzzleData);
-
-          // The current position can't possibly be lower than what's the next minimum expected position, else the sequence would have a starting position of below 0.
-          if(currentSeedPosition.position < ((puzzleData.pointers[j] * puzzleData.seedSize) - 
-          (puzzleData.pointers[j] != 0 && (puzzleData.pointers[validPosition] == puzzleData.pointers.length - 1 || puzzleData.pointers[j] == puzzleData.pointers.length - 1) 
-          ? puzzleData.seedTailOverlap : 0))) {
+          // The current position can't possibly be lower than what the next minimum expected position is.
+          if(positionTooSmall(
+          puzzleData, 
+          puzzleData.pointers[validPosition], 
+          puzzleData.pointers[j], 
+          currentSeedPosition.position)) {
             mismatches[i]++;   
             continue;
           }
+
+          int expectedPosition = int(candidates[i].position) + getPositionOffset(puzzleData.pointers[validPosition], puzzleData.pointers[j], puzzleData);
 
           // if NFT IDs match AND expected position equals the current position, then we have a match.
           if(candidates[i].nftId == currentSeedPosition.nftId && int(currentSeedPosition.position) == expectedPosition) {
@@ -315,20 +318,27 @@ contract QuerySemiBlast is QueryAbstract {
     }
   }
 
+  // Helper function for puzzleSeedPositions; this will tell us whether the currentPosition is too small.
+  function positionTooSmall(PuzzleData memory puzzleData, uint refPointer, uint currentPointer, uint currentPosition)
+  internal pure returns(bool isSmall) {
+    bool isFirst = currentPointer == 0;
+    bool oneIsLast = refPointer == puzzleData.positions.length - 1 || currentPointer == puzzleData.positions.length - 1;
+    uint minimumPosition = currentPointer * puzzleData.seedSize - (!isFirst && oneIsLast ? puzzleData.seedTailOverlap : 0);
+
+    isSmall = currentPosition < minimumPosition;
+  }
+
   // Helper function for puzzleSeedPositions; this calculates the distance between the previous and the next position.
-  function distanceToNextPosition(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
+  function getPositionOffset(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
   internal pure returns(int positionOffset) {
+    bool oneIsLast = startPointer == puzzleData.pointers.length - 1 || currentPointer == puzzleData.pointers.length - 1;
     int pointerDiff = int(currentPointer) - int(startPointer);
     
     // The last 3 letter word may overlap with the second last word, so we have to take this into consideration.
     // See fragment() in the Strings.sol library for more information. Particularly the 'forceSize' parameter.
     int seedTailOverlap = pointerDiff > 0 ? -1 * int(puzzleData.seedTailOverlap) : int(puzzleData.seedTailOverlap);
-
-    positionOffset = pointerDiff * int(puzzleData.seedSize) + 
-    (startPointer == puzzleData.pointers.length - 1 
-      || currentPointer == puzzleData.pointers.length - 1 
-        ? seedTailOverlap
-        : int(0));
+    
+    positionOffset = pointerDiff * int(puzzleData.seedSize) + (oneIsLast ? seedTailOverlap : int(0));
     
     return positionOffset;
   }
