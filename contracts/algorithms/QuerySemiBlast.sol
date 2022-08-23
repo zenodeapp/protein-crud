@@ -211,7 +211,7 @@ contract QuerySemiBlast is QueryAbstract {
     queryOutputPositions.returnAll = _positions.length == 0;
     queryOutputPositions.positions[0] = new Structs.SeedPositionStruct[](wildcardPointer);
 
-    // Copy over all positions we found to the final array (to prevent the larger initialized array)
+    // Copy the positions we found to a smaller-sized array
     for(uint i = 0; i < wildcardPointer; i++) queryOutputPositions.positions[0][i] = _positions[i];
 
     return queryOutputPositions;
