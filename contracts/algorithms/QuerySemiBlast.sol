@@ -242,7 +242,7 @@ contract QuerySemiBlast is QueryAbstract {
       // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.
       if(candidates[i].nftId > addedProteins.length || addedProteins[candidates[i].nftId - 1]) continue; 
 
-      // If there's only one 3 letter word amongst ***'s then skip if the position is smaller than the minimum expected value.
+      // If the current position is smaller than the minimum expected value then skip.
       if(positionTooSmall(
           puzzleData, 
           puzzleData.pointers[validPosition], 
@@ -263,12 +263,13 @@ contract QuerySemiBlast is QueryAbstract {
             continue;
           }
           
-          // The current position can't possibly be lower than what the next minimum expected position is.
+          // Again, if the current position is smaller than the minimum expected value then skip.
           if(positionTooSmall(
           puzzleData, 
           puzzleData.pointers[validPosition], 
           puzzleData.pointers[j], 
           currentSeedPosition.position)) {
+            // Also, treat this round as a mismatch.
             mismatches[i]++;   
             continue;
           }
