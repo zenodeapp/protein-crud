@@ -242,12 +242,15 @@ contract QuerySemiBlast is QueryAbstract {
       // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.
       if(candidates[i].nftId > addedProteins.length || addedProteins[candidates[i].nftId - 1]) continue; 
 
-      // If the current position is smaller than the minimum expected value then skip.
-      if(positionTooSmall(
+      // If there were ***'s (validPosition > 0) and we're the only seed in the query.
+      if(validPosition > 0 && validPosition == puzzleData.positions.length - 1) {
+        // If the current position is smaller than the minimum expected value then skip.
+        if(validPosition != 0 && positionTooSmall(
           puzzleData, 
           puzzleData.pointers[validPosition], 
           puzzleData.pointers[validPosition], 
           candidates[i].position)) continue;
+      }
 
       for(uint j = validPosition + 1; j < puzzleData.positions.length; j++) {
         //empty arrays are "***"-wildcards, skip these.
