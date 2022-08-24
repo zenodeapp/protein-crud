@@ -245,11 +245,10 @@ contract QuerySemiBlast is QueryAbstract {
       // If there were ***'s (validPosition > 0) and we're the only seed in the query.
       if(validPosition > 0 && validPosition == puzzleData.positions.length - 1) {
         // If the current position is smaller than the minimum expected value then skip.
-        if(validPosition != 0 && positionTooSmall(
-          puzzleData, 
-          puzzleData.pointers[validPosition], 
-          puzzleData.pointers[validPosition], 
-          candidates[i].position)) continue;
+        if(validPosition != 0 && candidates[i].position < getMinimumPosition(
+          puzzleData,
+          puzzleData.pointers[validPosition],
+          puzzleData.pointers[validPosition])) continue;
       }
 
       for(uint j = validPosition + 1; j < puzzleData.positions.length; j++) {
@@ -267,20 +266,18 @@ contract QuerySemiBlast is QueryAbstract {
           }
           
           // Again, if the current position is smaller than the minimum expected value then skip.
-          if(positionTooSmall(
-          puzzleData, 
-          puzzleData.pointers[validPosition], 
-          puzzleData.pointers[j], 
-          currentSeedPosition.position)) {
+          if(currentSeedPosition.position < getMinimumPosition(
+            puzzleData, 
+            puzzleData.pointers[validPosition],
+            puzzleData.pointers[j])) {
             // Also, treat this round as a mismatch.
             mismatches[i]++;   
             continue;
           }
 
-          int expectedPosition = int(candidates[i].position) + getPositionOffset(puzzleData.pointers[validPosition], puzzleData.pointers[j], puzzleData);
-
           // if NFT IDs match AND expected position equals the current position, then we have a match.
-          if(candidates[i].nftId == currentSeedPosition.nftId && int(currentSeedPosition.position) == expectedPosition) {
+          if(candidates[i].nftId == currentSeedPosition.nftId && int(currentSeedPosition.position) == 
+          int(candidates[i].position) + getPositionOffset(puzzleData.pointers[validPosition], puzzleData.pointers[j], puzzleData)) {
             mismatches[i] = -1;
             break;
           } else {
@@ -322,16 +319,15 @@ contract QuerySemiBlast is QueryAbstract {
     }
   }
 
-  // Helper function for puzzleSeedPositions; this will tell us whether the currentPosition is too small.
-  function positionTooSmall(PuzzleData memory puzzleData, uint refPointer, uint currentPointer, uint currentPosition)
-  internal pure returns(bool isSmall) {
+  // Helper function for puzzleSeedPositions; this will tell us what the minimum expected value for the current position is.
+  function getMinimumPosition(PuzzleData memory puzzleData, uint refPointer, uint currentPointer)
+  internal pure returns(uint minimumPosition) {
     bool isFirst = currentPointer == 0;
     bool oneIsLast = refPointer == puzzleData.positions.length - 1 || currentPointer == puzzleData.positions.length - 1;
-    uint minimumPosition = currentPointer * puzzleData.seedSize - (!isFirst && oneIsLast ? puzzleData.seedTailOverlap : 0);
-
-    isSmall = currentPosition < minimumPosition;
+    
+    return currentPointer * puzzleData.seedSize - (!isFirst && oneIsLast ? puzzleData.seedTailOverlap : 0);
   }
-
+  
   // Helper function for puzzleSeedPositions; this calculates the distance between the previous and the next position.
   function getPositionOffset(uint startPointer, uint currentPointer, PuzzleData memory puzzleData)
   internal pure returns(int positionOffset) {
