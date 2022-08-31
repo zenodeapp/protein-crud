@@ -86,7 +86,7 @@ module.exports = {
     defaultCaseSensitivity: false,
     defaultSeedSize: 3, //Only for semi-blast
     defaultUnion: false, //Currently only for the naive algorithm
-    defaultFormat: "protein", //Possible values: "protein", "id", "nft", "sequence", "ipfs" or "fasta".
+    defaultFormat: "protein", //Possible values: "protein", "id", "nft", "sequence", "ipfs", "fasta" or "fastasequence".
   },
 
   // Normally, inserting the same protein or seed twice would revert the tx, returning an error stating it already exists.

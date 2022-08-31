@@ -333,7 +333,7 @@ task(
   )
   .addOptionalParam(
     "format",
-    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence" or "ipfs".',
+    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence", "ipfs", "fasta" or "fastasequence".',
     queryOptions.defaultFormat
   )
   .setAction(async (taskArgs, hre) => {
@@ -388,7 +388,7 @@ task(
   )
   .addOptionalParam(
     "format",
-    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence" or "ipfs".',
+    'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence", "ipfs", "fasta" or "fastasequence".',
     queryOptions.defaultFormat
   )
   .setAction(async (taskArgs, hre) => {
