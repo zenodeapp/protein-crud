@@ -12,12 +12,12 @@ contract CrudProtein is Owner {
   uint[] public proteinIndex;
   mapping(uint => Structs.ProteinStruct) public proteinStructs;
 
-  event LogNewProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash);
-  event LogUpdateProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash);
+  event LogNewProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash, string fastaMetadata);
+  event LogUpdateProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash, string fastaMetadata);
   event LogDeleteProtein (uint indexed nftId, uint index);
 
   function insertProtein(uint nftId, string memory id,
-  string memory sequence, string memory ipfsHash, bool bypassRevert) public onlyAdmin returns(uint index) {
+  string memory sequence, string memory ipfsHash, string memory fastaMetadata, bool bypassRevert) public onlyAdmin returns(uint index) {
     bool exists = isProtein(nftId);
 
     if(bypassRevert && exists) {
@@ -30,26 +30,27 @@ contract CrudProtein is Owner {
     proteinStructs[nftId].id = id;
     proteinStructs[nftId].sequence = sequence;
     proteinStructs[nftId].ipfsHash = ipfsHash;
+    proteinStructs[nftId].fastaMetadata = fastaMetadata;
     
     proteinIndex.push(nftId);
     proteinStructs[nftId].index = proteinIndex.length - 1;
 
-    emit LogNewProtein(nftId, proteinStructs[nftId].index, id, sequence, ipfsHash);
+    emit LogNewProtein(nftId, proteinStructs[nftId].index, id, sequence, ipfsHash, fastaMetadata);
 
     return proteinIndex.length - 1;
   }
 
   function insertManyProteins(uint[] memory nftIds, string[] memory ids, 
-  string[] memory sequences, string[] memory ipfsHashes, bool bypassRevert) public onlyAdmin returns(uint index) {
+  string[] memory sequences, string[] memory ipfsHashes, string[] memory fastaMetadata, bool bypassRevert) public onlyAdmin returns(uint index) {
     for(uint i = 0; i < nftIds.length; i++) {
-      insertProtein(nftIds[i], ids[i], sequences[i], ipfsHashes[i], bypassRevert);
+      insertProtein(nftIds[i], ids[i], sequences[i], ipfsHashes[i], fastaMetadata[i], bypassRevert);
     }
 
     return proteinIndex.length - 1;
   }
 
   function updateProtein(uint nftId, string memory id, string memory sequence,
-  string memory ipfsHash, bool bypassRevert) public onlyAdmin returns(bool success) {
+  string memory ipfsHash, string memory fastaMetadata, bool bypassRevert) public onlyAdmin returns(bool success) {
     bool exists = isProtein(nftId);
 
     if(bypassRevert && !exists) {
@@ -62,16 +63,17 @@ contract CrudProtein is Owner {
     proteinStructs[nftId].id = id;
     proteinStructs[nftId].sequence = sequence;
     proteinStructs[nftId].ipfsHash = ipfsHash;
+    proteinStructs[nftId].fastaMetadata = fastaMetadata;
 
-    emit LogUpdateProtein(nftId, proteinStructs[nftId].index, id, sequence, ipfsHash);
+    emit LogUpdateProtein(nftId, proteinStructs[nftId].index, id, sequence, ipfsHash, fastaMetadata);
 
     return true;
   }
 
   function updateManyProteins(uint[] memory nftIds, string[] memory ids, 
-  string[] memory sequences, string[] memory ipfsHashes, bool bypassRevert) public onlyAdmin returns(bool success) {
+  string[] memory sequences, string[] memory ipfsHashes, string[] memory fastaMetadata, bool bypassRevert) public onlyAdmin returns(bool success) {
     for(uint i = 0; i < nftIds.length; i++) {
-      updateProtein(nftIds[i], ids[i], sequences[i], ipfsHashes[i], bypassRevert);
+      updateProtein(nftIds[i], ids[i], sequences[i], ipfsHashes[i], fastaMetadata[i], bypassRevert);
     }
 
     return true;
@@ -84,6 +86,7 @@ contract CrudProtein is Owner {
       proteinStructs[nftId].sequence = "";
       proteinStructs[nftId].id = "";
       proteinStructs[nftId].ipfsHash = "";
+      proteinStructs[nftId].fastaMetadata = "";
     }
 
     bool exists = isProtein(nftId);
@@ -105,7 +108,7 @@ contract CrudProtein is Owner {
     emit LogDeleteProtein(nftId, rowToDelete);
     
     Structs.ProteinStruct memory _proteinStruct = proteinStructs[keyToMove];
-    emit LogUpdateProtein(keyToMove, rowToDelete, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash);
+    emit LogUpdateProtein(keyToMove, rowToDelete, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash, _proteinStruct.fastaMetadata);
 
     return proteinIndex.length;
   }
@@ -136,7 +139,7 @@ contract CrudProtein is Owner {
     proteinStructs[nftId].index = proteinIndex.length - 1;
 
     Structs.ProteinStruct memory _proteinStruct = proteinStructs[nftId];
-    emit LogNewProtein(nftId, _proteinStruct.index, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash);
+    emit LogNewProtein(nftId, _proteinStruct.index, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash, _proteinStruct.fastaMetadata);
 
     return proteinIndex.length - 1;
   }
@@ -147,7 +150,7 @@ contract CrudProtein is Owner {
     return (proteinIndex[proteinStructs[nftId].index] == nftId);
   }
 
-  function getProtein(uint _nftId) public view returns(uint nftId, string memory id, string memory sequence, string memory ipfsHash, uint index) {
+  function getProtein(uint _nftId) public view returns(uint nftId, string memory id, string memory sequence, string memory ipfsHash, string memory fastaMetadata, uint index) {
     require(isProtein(_nftId), "NFT ID could not be found in the database."); 
 
     Structs.ProteinStruct memory _proteinStruct = proteinStructs[_nftId];
@@ -156,6 +159,7 @@ contract CrudProtein is Owner {
       _proteinStruct.id, 
       _proteinStruct.sequence,
       _proteinStruct.ipfsHash,
+      _proteinStruct.fastaMetadata,
       _proteinStruct.index);
   }
 
@@ -204,6 +208,25 @@ contract CrudProtein is Owner {
 
     for(uint i = 0; i < nftIds.length; i++) {
       ipfsHashes[i] = getProteinStruct(nftIds[i]).ipfsHash;
+    }
+  }
+
+  function getManyProteinFastaMetadata(uint[] memory nftIds) public view returns(string[] memory fastaMetadata) {
+    fastaMetadata = new string[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      fastaMetadata[i] = getProteinStruct(nftIds[i]).fastaMetadata;
+    }
+  }
+
+  function getManyProteinFastaSequences(uint[] memory nftIds) public view returns(string[] memory fastaSequences) {
+    fastaSequences = new string[](nftIds.length);
+
+    for(uint i = 0; i < nftIds.length; i++) {
+      Structs.ProteinStruct memory _proteinStruct = getProteinStruct(nftIds[i]);
+      fastaSequences[i] = bytes(_proteinStruct.fastaMetadata).length > 0 
+        ? string.concat(_proteinStruct.fastaMetadata, "\n", _proteinStruct.sequence) 
+        : _proteinStruct.sequence;
     }
   }
 

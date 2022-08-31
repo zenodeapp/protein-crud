@@ -29,4 +29,16 @@ contract QueryAbstract {
     result.proteinCount = _result.proteinCount;
     result.ipfsHashes = IndexerProtein(indexerProteinAddress).getManyProteinIpfsHashes(_result.nftIds);
   }
+
+  function _queryFastaMetadata(Structs.QueryOutputNftIds memory _result, address indexerProteinAddress)
+  internal view returns(Structs.QueryOutputFastaMetadata memory result) {
+    result.proteinCount = _result.proteinCount;
+    result.fastaMetadata = IndexerProtein(indexerProteinAddress).getManyProteinFastaMetadata(_result.nftIds);
+  }
+
+  function _queryFastaSequences(Structs.QueryOutputNftIds memory _result, address indexerProteinAddress)
+  internal view returns(Structs.QueryOutputFastaSequences memory result) {
+    result.proteinCount = _result.proteinCount;
+    result.fastaSequences = IndexerProtein(indexerProteinAddress).getManyProteinFastaSequences(_result.nftIds);
+  }
 }

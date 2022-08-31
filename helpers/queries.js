@@ -42,6 +42,24 @@ const queryProtein = async (contract, queryInput, queryOptions, format) => {
 
       data = { data: result.ipfsHashes, count: result.proteinCount };
       break;
+    case "fasta":
+      result = await contract.queryFastaMetadata(
+        queryInput,
+        queryOptions,
+        contracts.indexerProtein.address
+      );
+
+      data = { data: result.fastaMetadata, count: result.proteinCount };
+      break;
+    case "fastasequence":
+      result = await contract.queryFastaSequences(
+        queryInput,
+        queryOptions,
+        contracts.indexerProtein.address
+      );
+
+      data = { data: result.fastaSequences, count: result.proteinCount };
+      break;
     default:
       result = await contract.queryProteins(
         queryInput,

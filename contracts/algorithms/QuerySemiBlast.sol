@@ -63,6 +63,18 @@ contract QuerySemiBlast is QueryAbstract {
     Structs.QueryOutputNftIds memory _result = queryNftIds(queryInput, queryOptions, indexerProteinAddress);
     return _queryIpfsHashes(_result, indexerProteinAddress);
   }
+
+  function queryFastaMetadata(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputFastaMetadata memory result) {
+    Structs.QueryOutputNftIds memory _result = queryNftIds(queryInput, queryOptions, indexerProteinAddress);
+    return _queryFastaMetadata(_result, indexerProteinAddress);
+  }
+
+  function queryFastaSequences(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
+  public view returns(Structs.QueryOutputFastaSequences memory result) {
+    Structs.QueryOutputNftIds memory _result = queryNftIds(queryInput, queryOptions, indexerProteinAddress);
+    return _queryFastaSequences(_result, indexerProteinAddress);
+  }
   
   function semiBlastAlgorithm(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
   internal view returns(Structs.QueryOutputNftIds memory result) {

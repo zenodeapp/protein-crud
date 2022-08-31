@@ -9,6 +9,7 @@ library Structs {
     string id;
     string sequence;
     string ipfsHash;
+    string fastaMetadata;
     uint index;
   }
 
@@ -53,6 +54,16 @@ library Structs {
 
   struct QueryOutputIpfsHashes {
     string[] ipfsHashes;
+    uint proteinCount;
+  }
+
+  struct QueryOutputFastaMetadata {
+    string[] fastaMetadata;
+    uint proteinCount;
+  }
+
+  struct QueryOutputFastaSequences {
+    string[] fastaSequences;
     uint proteinCount;
   }
 
