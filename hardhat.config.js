@@ -371,6 +371,7 @@ task(
 )
   .addOptionalParam("sequence", "The sequence query.", "")
   .addOptionalParam("id", "The PDBID/ACCESSION query.", "")
+  .addOptionalParam("fasta", "The fasta metadata query.", "")
   .addOptionalParam(
     "limit",
     "Limit the amount of results given back.",
@@ -382,24 +383,18 @@ task(
     queryOptions.defaultCaseSensitivity ? "true" : "false"
   )
   .addOptionalParam(
-    "union",
-    "Union query would combine all individual results into one set. E.g. sequence = AAA and id = 1A, would result in all matches for AAA and all matches for 1A.",
-    queryOptions.defaultUnion ? "true" : "false"
-  )
-  .addOptionalParam(
     "format",
     'How would you like the data to formatted? Choose between "protein", "id", "nft", "sequence", "ipfs", "fasta" or "fastasequence".',
     queryOptions.defaultFormat
   )
   .setAction(async (taskArgs, hre) => {
-    const { id, sequence, limit, union, casesensitive, format } = taskArgs;
+    const { id, fasta, sequence, limit, casesensitive, format } = taskArgs;
 
     const contract = await getQueryNaiveContract(hre);
-    const queryInput = { id, sequence };
+    const queryInput = { id, sequence, fasta };
     const queryOptions = {
       limit: parseInt(limit),
       caseSensitive: eval(casesensitive),
-      union: eval(union),
     };
 
     if (contract) {

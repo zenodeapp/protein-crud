@@ -1,5 +1,11 @@
 ## BIG DATA ERA
 
+#### 1.2.7 (2022-08-31)
+
+- Added fastaMetadata to the protein CRUD.
+- Added fastaMetadata query functionality to QueryNaive.
+- Removed union querying for its complexity and likely to be unnecessary.
+
 #### 1.2.6 (2022-08-21)
 
 - QuerySemiBlast.sol now uses Quicksort to first found out which three letter word is the smallest (issue #12)

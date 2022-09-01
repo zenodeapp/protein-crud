@@ -16,12 +16,12 @@ contract QueryNaive is QueryAbstract {
   struct QueryInput {
     string id;
     string sequence;
+    string fasta;
   }
 
   struct QueryOptions {
     uint limit;
     bool caseSensitive;
-    bool union; //union query, see: https://www.sqlshack.com/sql-union-overview-usage-and-examples/.
   }
 
   function queryNftIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
@@ -69,8 +69,9 @@ contract QueryNaive is QueryAbstract {
   internal view returns(Structs.QueryOutputNftIds memory result) {
     bool idIsEmpty = bytes(queryInput.id).length == 0;
     bool sequenceIsEmpty = bytes(queryInput.sequence).length == 0;
+    bool fastaIsEmpty = bytes(queryInput.fasta).length == 0;
 
-    require(!idIsEmpty || !sequenceIsEmpty, "Query can't be empty.");
+    require(!idIsEmpty || !sequenceIsEmpty || !fastaIsEmpty, "Query can't be empty.");
     
     IndexerProtein indexerProtein = IndexerProtein(indexerProteinAddress);
     uint proteinCount = indexerProtein.getProteinCount();
@@ -81,19 +82,17 @@ contract QueryNaive is QueryAbstract {
     if(!queryOptions.caseSensitive) {
       if(!idIsEmpty) queryInput.id = queryInput.id.toUpper();
       if(!sequenceIsEmpty) queryInput.sequence = queryInput.sequence.toUpper();
+      if(!fastaIsEmpty) queryInput.fasta = queryInput.fasta.toUpper();
     }
 
     for(uint i = 0; i < proteinCount; i++) {
       Structs.ProteinStruct memory _protein = indexerProtein.getProteinStructAtIndex(i);
 
-      bool idCondition = (!queryOptions.union && idIsEmpty) 
-        || (!idIsEmpty && queryInput.id.contains(queryOptions.caseSensitive ? _protein.id : _protein.id.toUpper(), true));
-      bool sequenceCondition = (!queryOptions.union && sequenceIsEmpty) 
-        || (!sequenceIsEmpty && queryInput.sequence.contains(_protein.sequence, true));
+      bool idCondition = idIsEmpty || queryInput.id.contains(queryOptions.caseSensitive ? _protein.id : _protein.id.toUpper(), true);
+      bool fastaCondition = fastaIsEmpty || queryInput.fasta.compare(queryOptions.caseSensitive ? _protein.fastaMetadata : _protein.fastaMetadata.toUpper());
+      bool sequenceCondition = sequenceIsEmpty || queryInput.sequence.contains(_protein.sequence, true);
 
-      bool condition = queryOptions.union 
-        ? idCondition || sequenceCondition
-        : idCondition && sequenceCondition;
+      bool condition = idCondition && fastaCondition && sequenceCondition;
 
       if(condition) {
         _nftIds[result.proteinCount] = _protein.nftId;
