@@ -17,7 +17,9 @@ contract QuerySemiBlast is QueryAbstract {
   using Structs for Structs.SeedPositionStruct[][];
 
   struct QueryInput {
+    string id;
     string sequence;
+    string fasta;
   }
 
   struct QueryOptions {
@@ -28,11 +30,10 @@ contract QuerySemiBlast is QueryAbstract {
 
   struct PuzzleData {
     Structs.SeedPositionStruct[][] positions;
+    QueryOptions queryOptions;
     uint[] pointers;
     uint proteinCount;
-    uint seedSize;
     uint seedTailOverlap;
-    uint limit;
   }
 
   function queryNftIds(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
@@ -79,7 +80,7 @@ contract QuerySemiBlast is QueryAbstract {
   function semiBlastAlgorithm(QueryInput memory queryInput, QueryOptions memory queryOptions, address indexerProteinAddress)
   internal view returns(Structs.QueryOutputNftIds memory result) {
     uint wordSize = bytes(queryInput.sequence).length;
-    require(wordSize != 0, "Query can't be empty.");
+    require(wordSize != 0, "The Semi-blast algorithm is optimized for sequences, therefore a query must contain a sequence.");
     
     IndexerProtein indexerProtein = IndexerProtein(indexerProteinAddress);
     uint proteinCount = indexerProtein.getProteinCount();
@@ -127,13 +128,15 @@ contract QuerySemiBlast is QueryAbstract {
     if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(
       PuzzleData(
         queryOutputPositions.positions,
+        queryOptions,
         pointers,
         proteinCount, 
-        queryOptions.seedSize, 
-        queryOptions.seedSize - seedTailSize, 
-        queryOptions.limit
+        queryOptions.seedSize - seedTailSize
       )
     );
+
+    // This step is only done if the user also added an id and/or fasta string in their query.
+    result = processRemainingInput(queryInput, queryOptions, result, indexerProtein);
   }
 
   // The first step of the semi-blast algorithm for short queries.
@@ -312,7 +315,7 @@ contract QuerySemiBlast is QueryAbstract {
       result.proteinCount++;
 
       // Stop looking for more if we found enough matching proteins.
-      if(result.proteinCount == puzzleData.limit) break;
+      if(result.proteinCount == puzzleData.queryOptions.limit) break;
     }
 
     // Shrink the size of the resulting array
@@ -337,7 +340,7 @@ contract QuerySemiBlast is QueryAbstract {
     bool isFirst = currentPointer == 0;
     bool oneIsLast = refPointer == puzzleData.positions.length - 1 || currentPointer == puzzleData.positions.length - 1;
     
-    return currentPointer * puzzleData.seedSize - (!isFirst && oneIsLast ? puzzleData.seedTailOverlap : 0);
+    return currentPointer * puzzleData.queryOptions.seedSize - (!isFirst && oneIsLast ? puzzleData.seedTailOverlap : 0);
   }
   
   // Helper function for puzzleSeedPositions; this calculates the distance between the previous and the next position.
@@ -350,8 +353,37 @@ contract QuerySemiBlast is QueryAbstract {
     // See fragment() in the Strings.sol library for more information. Particularly the 'forceSize' parameter.
     int seedTailOverlap = pointerDiff > 0 ? -1 * int(puzzleData.seedTailOverlap) : int(puzzleData.seedTailOverlap);
     
-    positionOffset = pointerDiff * int(puzzleData.seedSize) + (oneIsLast ? seedTailOverlap : int(0));
+    positionOffset = pointerDiff * int(puzzleData.queryOptions.seedSize) + (oneIsLast ? seedTailOverlap : int(0));
     
     return positionOffset;
+  }
+
+  // Semi-blast is optimized for sequences, but could also be given other input (like ID or fasta).
+  // This uses the naive approach and is done separately as a final step to prevent cluttering the code for handling sequences.
+  function processRemainingInput(QueryInput memory queryInput, QueryOptions memory queryOptions, 
+  Structs.QueryOutputNftIds memory nftIds, IndexerProtein indexerProtein) 
+  internal view returns(Structs.QueryOutputNftIds memory result) {
+    bool idIsEmpty = bytes(queryInput.id).length == 0;
+    bool fastaIsEmpty = bytes(queryInput.fasta).length == 0;
+    
+    if(idIsEmpty && fastaIsEmpty) return nftIds;
+
+    Structs.ProteinStruct[] memory _proteinStructs = indexerProtein.getManyProteinStructs(nftIds.nftIds);
+    
+    uint[] memory _nftIds = new uint[](nftIds.proteinCount);
+
+    for(uint i = 0; i < _proteinStructs.length; i++) {
+      bool idCondition = idIsEmpty || queryInput.id.contains(queryOptions.caseSensitive ? _proteinStructs[i].id : _proteinStructs[i].id.toUpper(), true);
+      bool fastaCondition = fastaIsEmpty || queryInput.fasta.compare(queryOptions.caseSensitive ? _proteinStructs[i].fastaMetadata : _proteinStructs[i].fastaMetadata.toUpper());
+
+      if(idCondition && fastaCondition) {
+        _nftIds[result.proteinCount] = _proteinStructs[i].nftId;
+        result.proteinCount++;
+      }
+    }
+
+    // Copy the positions we found to a smaller-sized array
+    result.nftIds = new uint[](result.proteinCount);
+    for(uint j = 0; j < result.proteinCount; j++) result.nftIds[j] = _nftIds[j];
   }
 }

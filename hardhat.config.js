@@ -315,7 +315,9 @@ task(
   "querySemiBlast",
   "Get all NFTs matching the query using the semi-blast query protocol."
 )
-  .addOptionalParam("sequence", "The sequence query.", "")
+  .addParam("sequence", "The sequence query (required in semi-blast).", "")
+  .addOptionalParam("id", "The PDBID/ACCESSION query.", "")
+  .addOptionalParam("fasta", "The fasta metadata query.", "")
   .addOptionalParam(
     "seedsize",
     "Seed size to use for querying.",
@@ -337,10 +339,11 @@ task(
     queryOptions.defaultFormat
   )
   .setAction(async (taskArgs, hre) => {
-    const { sequence, seedsize, limit, casesensitive, format } = taskArgs;
+    const { sequence, id, fasta, seedsize, limit, casesensitive, format } =
+      taskArgs;
 
     const contract = await getQuerySemiBlastContract(hre);
-    const queryInput = { sequence };
+    const queryInput = { id, sequence, fasta };
     const queryOptions = {
       seedSize: parseInt(seedsize),
       limit: parseInt(limit),

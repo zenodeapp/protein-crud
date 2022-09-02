@@ -2,6 +2,7 @@
 
 #### 1.2.7 (2022-08-31)
 
+- Added fasta and id query functionality to QuerySemiBlast.
 - Added fastaMetadata to the protein CRUD.
 - Added fastaMetadata query functionality to QueryNaive.
 - Removed union querying for its complexity and likely to be unnecessary.
