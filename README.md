@@ -73,6 +73,7 @@ I've tried to credit everyone else's code by commenting in code whenever this wa
 - Hermes Ateneo's "contains" function (https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol)
 - Ottodevs' toLowerCase function (https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf) 
 - Comparing strings (https://ethereum.stackexchange.com/questions/30912/how-to-compare-strings-in-solidity)
+- Quick-sort from Subhodi, but in code altered for our needs (https://gist.github.com/subhodi/b3b86cc13ad2636420963e692a4d896f)
 - Semi-blast is inspired by the first steps of the Blast algorithm (by reading research papers, lectures, pseudo-code and implementations in other languages by others)
 </br>
 </br>
