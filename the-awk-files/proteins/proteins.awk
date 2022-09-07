@@ -33,17 +33,23 @@ NF{
     name=a[2];
     description=a[3];
     ipfs=a[4];
+    fasta_metadata=length(a) > 4 ? a[5] : "\"\"";
     description_length=length(description);
 
     if(counter >= maxNFT) {
-        print_array();
+        if(counter >= maxNFT) {
+            arr_printed++;
+            if(arr_printed == cap) exit;
+
+            print_array();
+        }
     }
 
     if(nft_counter != nft_id) {
         print "It seems that there's a gap in the NFTs, all NFTs must be sorted for this to work. NFT counter expected: "nft_counter" but got "nft_id" instead.";
     }
     
-    protein_structs[counter] = "{\"nftId\":"nft_id", \"id\":"name", \"sequence\":"description", \"ipfs\":"ipfs"}";
+    protein_structs[counter] = "{\"nftId\":"nft_id", \"id\":"name", \"sequence\":"description", \"ipfs\":"ipfs", \"fastaMetadata\":"fasta_metadata"}";
     counter++;
     nft_counter++;
 } 

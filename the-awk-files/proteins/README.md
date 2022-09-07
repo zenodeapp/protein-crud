@@ -11,6 +11,7 @@ Apply the awk in this folder to the nfts.input file in the parent folder.
 ### Variables
 
 - `max`: changes the amount of proteins per file. Default `1400`.
+- `cap`: this caps the amount of .txt files awk will export. Default: `0` (all).
 
 ### Result
 
