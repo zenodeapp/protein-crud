@@ -5,7 +5,7 @@ function print_array() {
         split(x, b, "\"");
 
         for(i = 1; i < counter[x]; i++) {
-            output_file = "./output/split_by_os_"b[2]"_"(max_per_os == 0 ? 0 : int((i-1)/max_per_os))".txt";
+            output_file = "./output/split_by_os_"b[2]"_"(_nfts_per_file == 0 ? 0 : int((i-1)/_nfts_per_file))".txt";
             print arr[x][i] > output_file;
         }
     }
@@ -13,7 +13,7 @@ function print_array() {
 
 BEGIN{
     system("mkdir output 2>&-");
-    max_per_os = max ? max : 10000;
+    _nfts_per_file = nfts_per_file ? nfts_per_file : 0;
 } 
 
 NF{
