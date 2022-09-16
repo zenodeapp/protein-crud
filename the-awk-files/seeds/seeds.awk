@@ -178,7 +178,7 @@ NF{
             print "It seems that there's a gap in the NFTs, all NFTs must be sorted for this to work. NFT counter expected: "nft_counter" but got "nft_id" instead.";
         }
         
-        pos_obj = relative ? indexer_pointer : 2d_array == 1 ? "["(nft_id-1)%(maxNFT) + 1","local_pointer"]" : "{" (compressed ? "\"n\"" : "\"nftId\"")":"(nft_id-1)%(maxNFT) + 1","(compressed ? "\"p\"" : "\"position\"")":"local_pointer"}";
+        pos_obj = relative ? indexer_pointer : 2d_array == 1 ? "["nft_id","local_pointer"]" : "{" (compressed ? "\"n\"" : "\"nftId\"")":"nft_id","(compressed ? "\"p\"" : "\"position\"")":"local_pointer"}";
         current_seed_index = max_position_size == 0 ? 0 : int(seed_positions_count[seed] / max_position_size);
         arr[current_seed_index][0] = "";
 

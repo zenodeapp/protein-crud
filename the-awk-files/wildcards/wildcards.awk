@@ -36,6 +36,7 @@ function print_result() {
     
     delete arr;
     delete seed_positions_count;
+    delete wildcard_seed_exists;
     indexer_pointer=0;
     counter = 0;
     indexer++;
