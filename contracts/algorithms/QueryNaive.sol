@@ -77,7 +77,7 @@ contract QueryNaive is QueryAbstract {
     uint proteinCount = indexerProtein.getProteinCount();
     require(proteinCount > 0, "In order to query in this manner, proteins have to be inserted first.");
 
-    uint[] memory _nftIds = new uint[](proteinCount);
+    uint[] memory _nftIds = new uint[](indexerProtein.nftIdCeil());
 
     if(!queryOptions.caseSensitive) {
       if(!idIsEmpty) queryInput.id = queryInput.id.toUpper();

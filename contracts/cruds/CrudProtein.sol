@@ -12,6 +12,8 @@ contract CrudProtein is Owner {
   uint[] public proteinIndex;
   mapping(uint => Structs.ProteinStruct) public proteinStructs;
 
+  uint public nftIdCeil;
+
   event LogNewProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash, string fastaMetadata);
   event LogUpdateProtein (uint indexed nftId, uint index, string id, string sequence, string ipfsHash, string fastaMetadata);
   event LogDeleteProtein (uint indexed nftId, uint index);
@@ -25,7 +27,7 @@ contract CrudProtein is Owner {
     } else {
       require(!exists, "This nft already exists and can't be inserted twice. Update its properties instead.");
     }
-
+    
     proteinStructs[nftId].nftId = nftId;
     proteinStructs[nftId].id = id;
     proteinStructs[nftId].sequence = sequence;
@@ -34,6 +36,7 @@ contract CrudProtein is Owner {
     
     proteinIndex.push(nftId);
     proteinStructs[nftId].index = proteinIndex.length - 1;
+    if(nftIdCeil < nftId) nftIdCeil = nftId;
 
     emit LogNewProtein(nftId, proteinStructs[nftId].index, id, sequence, ipfsHash, fastaMetadata);
 
@@ -129,6 +132,7 @@ contract CrudProtein is Owner {
       deleteProtein(proteinIndex[0], hardDelete, false);
     }
     
+    nftIdCeil = 0;
     return proteinIndex.length;
   }
 
@@ -137,6 +141,8 @@ contract CrudProtein is Owner {
 
     proteinIndex.push(nftId);
     proteinStructs[nftId].index = proteinIndex.length - 1;
+    
+    if(nftIdCeil < nftId) nftIdCeil = nftId;
 
     Structs.ProteinStruct memory _proteinStruct = proteinStructs[nftId];
     emit LogNewProtein(nftId, _proteinStruct.index, _proteinStruct.id, _proteinStruct.sequence, _proteinStruct.ipfsHash, _proteinStruct.fastaMetadata);
@@ -179,11 +185,27 @@ contract CrudProtein is Owner {
     }
   }
 
+  function getManyProteinStructsAtIndices(uint[] memory indices) public view returns(Structs.ProteinStruct[] memory proteins) {
+    proteins = new Structs.ProteinStruct[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      proteins[i] = getProteinStructAtIndex(indices[i]);
+    }
+  }
+
   function getAllProteinStructs() public view returns(Structs.ProteinStruct[] memory _proteinStructs) {
     _proteinStructs = new Structs.ProteinStruct[](proteinIndex.length);
 
     for(uint i = 0; i < proteinIndex.length; i++) {
       _proteinStructs[i] = getProteinStruct(proteinIndex[i]);
+    }
+  }
+
+  function getManyProteinNftIdsAtIndices(uint[] memory indices) public view returns(uint[] memory nftIds) {
+    nftIds = new uint[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      nftIds[i] = getProteinStructAtIndex(indices[i]).nftId;
     }
   }
 
@@ -195,11 +217,27 @@ contract CrudProtein is Owner {
     }
   }
 
+  function getManyProteinIdsAtIndices(uint[] memory indices) public view returns(string[] memory ids) {
+    ids = new string[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      ids[i] = getProteinStructAtIndex(indices[i]).id;
+    }
+  }
+
   function getManyProteinSequences(uint[] memory nftIds) public view returns(string[] memory sequences) {
     sequences = new string[](nftIds.length);
 
     for(uint i = 0; i < nftIds.length; i++) {
       sequences[i] = getProteinStruct(nftIds[i]).sequence;
+    }
+  }
+
+  function getManyProteinSequencesAtIndices(uint[] memory indices) public view returns(string[] memory sequences) {
+    sequences = new string[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      sequences[i] = getProteinStructAtIndex(indices[i]).sequence;
     }
   }
 
@@ -211,6 +249,14 @@ contract CrudProtein is Owner {
     }
   }
 
+  function getManyProteinIpfsHashesAtIndices(uint[] memory indices) public view returns(string[] memory ipfsHashes) {
+    ipfsHashes = new string[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      ipfsHashes[i] = getProteinStructAtIndex(indices[i]).ipfsHash;
+    }
+  }
+
   function getManyProteinFastaMetadata(uint[] memory nftIds) public view returns(string[] memory fastaMetadata) {
     fastaMetadata = new string[](nftIds.length);
 
@@ -219,11 +265,30 @@ contract CrudProtein is Owner {
     }
   }
 
+  function getManyProteinFastaMetadataAtIndices(uint[] memory indices) public view returns(string[] memory fastaMetadata) {
+    fastaMetadata = new string[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      fastaMetadata[i] = getProteinStructAtIndex(indices[i]).fastaMetadata;
+    }
+  }
+
   function getManyProteinFastaSequences(uint[] memory nftIds) public view returns(string[] memory fastaSequences) {
     fastaSequences = new string[](nftIds.length);
 
     for(uint i = 0; i < nftIds.length; i++) {
       Structs.ProteinStruct memory _proteinStruct = getProteinStruct(nftIds[i]);
+      fastaSequences[i] = bytes(_proteinStruct.fastaMetadata).length > 0 
+        ? string.concat(_proteinStruct.fastaMetadata, "\n", _proteinStruct.sequence) 
+        : _proteinStruct.sequence;
+    }
+  }
+
+  function getManyProteinFastaSequencesAtIndices(uint[] memory indices) public view returns(string[] memory fastaSequences) {
+    fastaSequences = new string[](indices.length);
+
+    for(uint i = 0; i < indices.length; i++) {
+      Structs.ProteinStruct memory _proteinStruct = getProteinStructAtIndex(indices[i]);
       fastaSequences[i] = bytes(_proteinStruct.fastaMetadata).length > 0 
         ? string.concat(_proteinStruct.fastaMetadata, "\n", _proteinStruct.sequence) 
         : _proteinStruct.sequence;

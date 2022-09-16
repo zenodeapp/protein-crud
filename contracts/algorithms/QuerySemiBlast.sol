@@ -32,7 +32,7 @@ contract QuerySemiBlast is QueryAbstract {
     Structs.SeedPositionStruct[][] positions;
     QueryOptions queryOptions;
     uint[] pointers;
-    uint proteinCount;
+    uint nftIdCeil;
     uint seedTailOverlap;
   }
 
@@ -83,8 +83,8 @@ contract QuerySemiBlast is QueryAbstract {
     require(wordSize != 0, "The Semi-blast algorithm is optimized for sequences, therefore a query must contain a sequence.");
     
     IndexerProtein indexerProtein = IndexerProtein(indexerProteinAddress);
-    uint proteinCount = indexerProtein.getProteinCount();
-    require(proteinCount > 0, "In order to query in this manner, proteins have to be inserted first.");
+    uint[2] memory proteinLimits = [indexerProtein.getProteinCount(), indexerProtein.nftIdCeil()];
+    require(proteinLimits[0] > 0, "In order to query in this manner, proteins have to be inserted first.");
 
     address indexerSeedAddress = indexerProtein.getSeedLink(queryOptions.seedSize);
     require(indexerSeedAddress != address(0), "Can't query with this seed size.");
@@ -115,14 +115,14 @@ contract QuerySemiBlast is QueryAbstract {
       Structs.WildcardStruct[2] memory wildcards = createWildcards(queryInput.sequence, queryOptions.seedSize, indexerSeed);
 
       // The search for positions is slightly different for short queries (namely: all positions found are valid, so heap them all together in one giant list).
-      queryOutputPositions = getWildcardPositions(wildcards, proteinCount, indexerSeed);
+      queryOutputPositions = getWildcardPositions(wildcards, proteinLimits[1], indexerSeed);
       
       // There is only one pointer in a short query, namely: [0].
       pointers = new uint[](1);
     }
 
     // if returnAll is true, which only happens if only *'s were found, we return all proteins.
-    if(queryOutputPositions.returnAll) return Structs.QueryOutputNftIds(indexerProtein.getProteinIndex(), proteinCount);
+    if(queryOutputPositions.returnAll) return Structs.QueryOutputNftIds(indexerProtein.getProteinIndex(), proteinLimits[0]);
 
     // Puzzle the w-sized pieces back together and return only the NFT IDs that successfully match our queried string.
     if(!queryOutputPositions.emptyFound) result = puzzleSeedPositions(
@@ -130,7 +130,7 @@ contract QuerySemiBlast is QueryAbstract {
         queryOutputPositions.positions,
         queryOptions,
         pointers,
-        proteinCount, 
+        proteinLimits[1], 
         queryOptions.seedSize - seedTailSize
       )
     );
@@ -192,7 +192,7 @@ contract QuerySemiBlast is QueryAbstract {
   }
 
   // Second step for semi-blast's short query variant.
-  function getWildcardPositions(Structs.WildcardStruct[2] memory wildcards, uint _proteinCount, IndexerSeed indexerSeed)
+  function getWildcardPositions(Structs.WildcardStruct[2] memory wildcards, uint _nftIdCeil, IndexerSeed indexerSeed)
   internal view returns (Structs.QueryOutputPositions memory queryOutputPositions) {
     if(!indexerSeed.isWildcard(wildcards[0].wildcard) 
     && !indexerSeed.isWildcard(wildcards[1].wildcard)) {
@@ -203,7 +203,7 @@ contract QuerySemiBlast is QueryAbstract {
 
     queryOutputPositions.positions = new Structs.SeedPositionStruct[][](1);
     Structs.SeedPositionStruct[] memory _positions = new Structs.SeedPositionStruct[](wildcards[0].count + wildcards[1].count);
-    bool[] memory addedProteins = new bool[](_proteinCount);
+    bool[] memory addedProteins = new bool[](_nftIdCeil);
 
     uint wildcardPointer = 0;
     for (uint i = 0; i < wildcards.length; i++) {
@@ -251,7 +251,7 @@ contract QuerySemiBlast is QueryAbstract {
     int[] memory mismatches = new int[](maxQueryAmount);
 
     // Keeps track of which proteins we've already added (index + 1 = NFT ID).
-    bool[] memory addedProteins = new bool[](puzzleData.proteinCount);
+    bool[] memory addedProteins = new bool[](puzzleData.nftIdCeil);
 
     for (uint i = 0; i < maxQueryAmount; i++) {
       // If the protein doesn't exist or has already been added, it's not necessary to include it in our calculations.

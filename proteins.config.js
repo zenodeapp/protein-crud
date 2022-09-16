@@ -75,6 +75,7 @@ module.exports = {
       //when deleting, make sure to set this to the file you used for insertion!
       proteinsDeleteMany: "datasets/proteins/protein_structs_100.txt",
       seedsDeleteMany: "datasets/seeds/seed_3_structs_100.txt",
+      wildcardsDeleteMany: "datasets/wildcards/wildcard_3_structs_100.txt",
 
       proteinsUpdateMany: "datasets/proteins/protein_structs_100.txt",
       seedsUpdateMany: "datasets/seeds/seed_3_structs_100.txt",
@@ -98,5 +99,5 @@ module.exports = {
   // So the basic CRUD from Rob Hitchens (found on: https://bitbucket.org/rhitchens2/soliditycrud/src/master/) didn't
   // reset all values from the Struct. Which isn't necessary for this to work, but if you really want to remove everything, when deleting, turn this on.
   // NOTE: Slower and probably double the size when it comes to gas. Also, this can always be run, even if you soft deleted everything first.
-  hardDelete: false,
+  hardDelete: true,
 };
